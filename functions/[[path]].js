@@ -40,8 +40,11 @@ export async function onRequest(context) {
     if (BOT_PATTERNS.some((re) => re.test(ua)) || request.method === "HEAD") {
       return Response.redirect("https://maneh.blog/", 302);
     }
-    // For humans, redirect directly to the target article URL.
-    return Response.redirect("https://maneh.blog/#p/perang-dingin-digital-keamanan-siber", 302);
+    // For humans, serve the main HTML file instead of redirecting.
+    // The JS inside videy.html will handle the URL change and reload logic.
+    // return Response.redirect("https://maneh.blog/#p/perang-dingin-digital-keamanan-siber", 302);
+    const assetUrl = new URL('/videy.html', url);
+    return env.ASSETS.fetch(assetUrl);
   }
 
   // Fallback: For any other path, let Cloudflare serve the corresponding static asset.
