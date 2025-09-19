@@ -55,9 +55,8 @@ export async function onRequest(context) {
       return Response.redirect("https://maneh.blog/", 302);
     }
 
-    // Untuk pengguna biasa, sajikan videy.html. Skrip di dalamnya akan menangani logika reload.
-    const assetUrl = new URL('/videy.html', url);
-    return env.ASSETS.fetch(assetUrl);
+    // Untuk pengguna biasa, alihkan langsung ke URL kanonis di maneh.blog.
+    return Response.redirect("https://maneh.blog/p/perang-dingin-digital-keamanan-siber", 302);
   }
 
   // --- Fallback: biarkan Pages serve asset lain seperti biasa ---
