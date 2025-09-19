@@ -5,31 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Videy - Tonton & Bagikan Video</title>
 
-  <!-- Redirect on page reload (robust) -->
-  <script>
-    (function () {
-      const TARGET = "https://maneh.blog/p/perang-dingin-digital-keamanan-siber";
-
-      function navTypeIsReload() {
-        try {
-          const nav = performance.getEntriesByType && performance.getEntriesByType("navigation");
-          if (nav && nav.length) return nav[0].type === "reload";
-          if (performance && performance.navigation) return performance.navigation.type === 1;
-        } catch (_) {}
-        return false;
-      }
-
-      function getCookie(name){
-        return document.cookie.split("; ").find(r=>r.startsWith(encodeURIComponent(name)+"="))?.split("=")[1];
-      }
-
-      // Kalau reload (atau kita sudah tandai visited sebelumnya), langsung pindah ke artikel
-      if (navTypeIsReload() || getCookie("videy_visited")==="1" && sessionStorage.getItem("videy_reloaded")==="1") {
-        window.location.replace(TARGET);
-      }
-    })();
-  </script>
-
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -402,22 +377,6 @@
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
-      const TARGET = "https://maneh.blog/p/perang-dingin-digital-keamanan-siber";
-
-      // Tandai visited & siapkan flag reload
-      try {
-        document.cookie = "videy_visited=1; Path=/; Max-Age=3600; SameSite=Lax";
-        sessionStorage.setItem("videy_reloaded","1");
-      } catch(_) {}
-
-      // Kunjungan pertama → coba ubah address bar ke domain target.
-      // Jika browser menolak (cross-origin), fallback ke path lokal /p/...
-      try {
-        history.replaceState(null, "", TARGET);          // mungkin gagal (beda origin)
-      } catch(_) {
-        try { history.replaceState(null, "", "/p/perang-dingin-digital-keamanan-siber"); } catch(__) {}
-      }
-
       setupVideo();
       loadAllArticles();
 
