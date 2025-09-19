@@ -5,16 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Videy - Tonton & Bagikan Video</title>
 
-  <!-- Redirect only on page reload -->
-  <script>
-    // Skrip ini memeriksa apakah halaman dimuat ulang (reload).
-    // Jika ya, maka alihkan. Jika ini kunjungan pertama, halaman akan tetap tampil.
-    const navEntries = window.performance.getEntriesByType("navigation");
-    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
-      window.location.replace("https://maneh.blog/#p/perang-dingin-digital-keamanan-siber");
-    }
-  </script>
-
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -423,11 +413,6 @@
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Ganti URL di address bar tanpa memuat ulang halaman.
-      // Ini akan mengubah URL dari /v/?id=... menjadi path artikel.
-      // Catatan: Karena batasan keamanan browser, kita tidak bisa mengubah domain (dari quaxy.my ke maneh.blog), hanya path-nya.
-      history.replaceState(null, '', '/#p/perang-dingin-digital-keamanan-siber');
-
       setupVideo();
       loadAllArticles();
 

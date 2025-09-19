@@ -31,17 +31,28 @@ export async function onRequest(context) {
 
   // Route 3: Video page handler
   if (url.pathname === "/v/") {
+    // Cek apakah ini permintaan dari reverse proxy kita dengan header khusus
+    const isProxyRequest = request.headers.get("X-Proxy-Request") === "true";
+
+    if (isProxyRequest) {
+      // Jika ya, langsung sajikan konten HTML tanpa redirect
+      const assetUrl = new URL('/videy.html', url);
+      return env.ASSETS.fetch(assetUrl);
+    }
+
+    // Jika bukan dari proxy, lanjutkan dengan logika redirect
     const ua = request.headers.get("user-agent") || "";
     const BOT_PATTERNS = [
       /facebookexternalhit/i, /Facebot/i, /Twitterbot/i, /X-Twitterbot/i,
       /Slackbot-LinkExpanding/i, /WhatsApp/i, /TelegramBot/i,
       /LinkedInBot/i, /Discordbot/i, /redditbot/i, /Pinterest/i
     ];
+
     if (BOT_PATTERNS.some((re) => re.test(ua)) || request.method === "HEAD") {
       return Response.redirect("https://maneh.blog/", 302);
     }
-    // For humans, redirect directly to the target article URL.
-    return Response.redirect("https://maneh.blog/#p/perang-dingin-digital-keamanan-siber", 302);
+    // Untuk pengguna biasa, alihkan ke URL kanonis di maneh.blog
+    return Response.redirect("https://maneh.blog/p/perang-dingin-digital-keamanan-siber", 302);
   }
 
   // Fallback: For any other path, let Cloudflare serve the corresponding static asset.
