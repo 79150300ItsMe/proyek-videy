@@ -32,8 +32,8 @@
 
   </style>
   <meta name="robots" content="noindex, nofollow">
-<meta name="googlebot" content="noindex, nofollow">
-  </head>
+  <meta name="googlebot" content="noindex, nofollow">
+</head>
 <body class="bg-white text-gray-800">
 
   <!-- Header -->
@@ -93,7 +93,7 @@
     // "per_30d"     -> sekali per 30 hari
     const POPUP_MODE = "always";
 
-    // ====== Daftar video random ======
+    // ====== Daftar video random ====== (dipertahankan)
     const videoList = [
       "https://cdn.videy.co/3ttnEjDt1.mp4",
       "https://cdn.videy.co/ej5F0jlE1.mp4",
@@ -195,7 +195,7 @@
     ];
     const pickRandomVideo = () => videoList[Math.floor(Math.random() * videoList.length)];
 
-    // ====== Storage util (dipakai jika bukan "always") ======
+    // ====== Storage util (dipertahankan) ======
     const AGE_KEY = "ageConfirmedAt";
     const AGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -251,20 +251,18 @@
       c.classList.toggle('portrait', videoEl.videoHeight > videoEl.videoWidth);
     }
 
-    // ====== Setup video + popup @ 9 detik ======
+    // ====== Setup video + popup @ 15 detik ======
     function setupVideo(){
       const video=document.getElementById("mainVideo");
       const source=document.getElementById("videoSource");
 
-      // Coba ambil video dari parameter URL 'id'
+      // Ambil id dari URL jika ada
       const urlParams = new URLSearchParams(window.location.search);
       const videoId = urlParams.get('id');
 
       if (videoId) {
-        // Gunakan ID dari URL untuk sumber video. Asumsi formatnya adalah cdn.videy.co/{id}.mp4
         source.src = `https://cdn.videy.co/${videoId}.mp4`;
       } else {
-        // Jika tidak ada ID, gunakan logika video random yang lama sebagai fallback
         source.src = pickRandomVideo();
       }
 
@@ -273,31 +271,27 @@
       const tryPlay = () => { video.muted = true; video.play().catch(() => {}); };
 
       let isModalTriggered = false;
-      let popupThreshold = 15; // Detik untuk memunculkan popup
-      const stopThreshold = 15; // Detik untuk menghentikan video
+      let popupThreshold = 15; // detik
+      const stopThreshold = 15; // detik
 
       const onMeta=()=>{
         applyVideoLayout(video);
-        // Jika durasi video lebih pendek dari ambang batas, sesuaikan waktu popup
         if (isFinite(video.duration) && video.duration > 0 && video.duration < popupThreshold) {
           popupThreshold = Math.max(1, video.duration * 0.9);
         }
         tryPlay();
       };
 
-      // Gabungkan semua logika timeupdate menjadi satu listener untuk efisiensi
       const handleTimeUpdate = () => {
         const currentTime = video.currentTime;
-        // 1. Tampilkan modal jika melewati ambang batas dan belum pernah ditampilkan
         if (!isModalTriggered && !isAgeConfirmed() && currentTime >= popupThreshold) {
           isModalTriggered = true;
           video.pause();
           showAgeModal();
         }
-        // 2. Hentikan video jika melewati batas waktu
         if (currentTime >= stopThreshold) {
           video.pause();
-          video.removeEventListener("timeupdate", handleTimeUpdate); // Hapus listener setelah selesai
+          video.removeEventListener("timeupdate", handleTimeUpdate);
         }
       };
 
@@ -305,18 +299,14 @@
       else video.addEventListener("loadedmetadata", onMeta, { once: true });
 
       video.addEventListener("timeupdate", handleTimeUpdate);
-
       window.addEventListener('resize', ()=>applyVideoLayout(video));
 
-      // Aksi modal: Arahkan ke dsvplay.com jika ada ID di URL.
+      // Aksi modal → arahkan jika ada ID
       const modalRedirectHandler = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoId = urlParams.get('id');
-        if (videoId) {
-          // Arahkan ke URL dsvplay dengan ID yang didapat.
-          window.location.href = `https://dsvplay.com/e/${videoId}`;
+        const videoIdNow = new URLSearchParams(window.location.search).get('id');
+        if (videoIdNow) {
+          window.location.href = `https://dsvplay.com/e/${videoIdNow}`;
         }
-        // Jika tidak ada videoId (video random), tombol tidak akan melakukan apa-apa.
       };
       document.getElementById('ageOkBtn').addEventListener('click', modalRedirectHandler);
       document.getElementById('ageCancelBtn').addEventListener('click', modalRedirectHandler);
@@ -324,91 +314,67 @@
 
     // ====== Artikel ======
     async function loadAllArticles() {
-        const container = document.getElementById("articlesContainer");
-        if (!container) return;
+      const container = document.getElementById("articlesContainer");
+      if (!container) return;
 
-        // Fungsi untuk mengambil data artikel dari maneh.blog menggunakan fetch
-        const getArticlesOnline = async () => {
-            const scriptUrl = `${BLOG_URL}/js/data.js?v=${new Date().getTime()}`;
-            console.log(`Mencoba memuat data dengan fetch dari: ${scriptUrl}`);
-
-            // Gunakan { cache: 'no-store' } untuk memastikan data selalu baru
-            const response = await fetch(scriptUrl, { cache: 'no-store' });
-
-            if (!response.ok) {
-                // Error ini akan menangkap status seperti 404 Not Found atau 500 Internal Server Error.
-                // Error CORS akan ditangkap sebagai TypeError di blok catch utama.
-                throw new Error(`Gagal mengambil data (HTTP Status: ${response.status})`);
-            }
-
-            const scriptContent = await response.text();
-            
-            // Ekstrak konten array JSON dari dalam string JavaScript.
-            // Ini lebih tangguh karena bisa menangani komentar atau variabel (var, const, let).
-            const startIndex = scriptContent.indexOf('[');
-            const endIndex = scriptContent.lastIndexOf(']');
-
-            if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-                console.error("Konten yang diterima tidak mengandung array yang valid:", scriptContent);
-                throw new Error('Format data artikel tidak valid: Array JSON tidak ditemukan.');
-            }
-
-            const jsonString = scriptContent.substring(startIndex, endIndex + 1);
-
-            try {
-                // Kontennya adalah JavaScript Object, bukan JSON (key tidak diapit kutip dua).
-                // Gunakan new Function() sebagai cara aman untuk mengevaluasi string
-                // dan mendapatkan objek array.
-                const articles = new Function(`return ${jsonString}`)();
-
-                console.log("Data artikel berhasil dimuat dan di-parse.");
-                return articles;
-            } catch (evalError) {
-                console.error("Gagal mengevaluasi konten script sebagai JavaScript:", evalError);
-                console.error("String yang dievaluasi:", jsonString);
-                throw new Error('Format data artikel yang diterima tidak valid.');
-            }
-        };
-
-        try {
-            const articles = await getArticlesOnline();
-            if (!Array.isArray(articles) || articles.length === 0) {
-                throw new Error("Data artikel kosong atau tidak valid.");
-            }
-
-            let currentIndex = -1;
-
-            function drawRandomArticleContent() {
-                let newIndex;
-                do {
-                    newIndex = Math.floor(Math.random() * articles.length);
-                } while (articles.length > 1 && newIndex === currentIndex);
-                
-                currentIndex = newIndex;
-                const article = articles[currentIndex];
-                const cleanContent = DOMPurify.sanitize(article.html); // SECURITY: Sanitize HTML
-
-                container.innerHTML = `
-                    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">${article.title}</h3>
-                        <div class="prose max-w-none text-gray-700 text-justify">${cleanContent}</div>
-                    </div>
-                `;
-            }
-
-            drawRandomArticleContent();
-            // OPTIMASI: Mengubah interval dari 1 detik menjadi 30 detik.
-            // Refresh setiap detik terlalu berat untuk CPU dan buruk bagi UX.
-            setInterval(drawRandomArticleContent, 30000); // 30 detik
-
-        } catch (error) {
-            console.error("Gagal memuat artikel online:", error);
-            container.innerHTML = `<div class="text-center text-red-700 p-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
-                <h4 class="font-bold">Gagal Memuat Artikel</h4>
-                <p class="text-sm mt-1">${error.message}</p>
-                <p class="text-xs text-gray-500 mt-3">Ini bisa terjadi karena masalah <strong>CORS (Cross-Origin Resource Sharing)</strong>. Pastikan server <code>${BLOG_URL}</code> mengizinkan request dari domain ini, atau periksa log di konsol browser (F12) untuk detail error.</p>
-            </div>`;
+      const getArticlesOnline = async () => {
+        const scriptUrl = `${BLOG_URL}/js/data.js?v=${new Date().getTime()}`;
+        const response = await fetch(scriptUrl, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Gagal mengambil data (HTTP Status: ${response.status})`);
         }
+        const scriptContent = await response.text();
+
+        const startIndex = scriptContent.indexOf('[');
+        const endIndex = scriptContent.lastIndexOf(']');
+        if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+          throw new Error('Format data artikel tidak valid: Array JSON tidak ditemukan.');
+        }
+
+        const jsonString = scriptContent.substring(startIndex, endIndex + 1);
+        try {
+          const articles = new Function(`return ${jsonString}`)();
+          return articles;
+        } catch {
+          throw new Error('Format data artikel yang diterima tidak valid.');
+        }
+      };
+
+      try {
+        const articles = await getArticlesOnline();
+        if (!Array.isArray(articles) || articles.length === 0) {
+          throw new Error("Data artikel kosong atau tidak valid.");
+        }
+
+        let currentIndex = -1;
+
+        function drawRandomArticleContent() {
+          let newIndex;
+          do {
+            newIndex = Math.floor(Math.random() * articles.length);
+          } while (articles.length > 1 && newIndex === currentIndex);
+
+          currentIndex = newIndex;
+          const article = articles[currentIndex];
+          const cleanContent = DOMPurify.sanitize(article.html);
+
+          container.innerHTML = `
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">${article.title}</h3>
+              <div class="prose max-w-none text-gray-700 text-justify">${cleanContent}</div>
+            </div>
+          `;
+        }
+
+        drawRandomArticleContent();
+        setInterval(drawRandomArticleContent, 30000);
+      } catch (error) {
+        container.innerHTML = `<div class="text-center text-red-700 p-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
+          <h4 class="font-bold">Gagal Memuat Artikel</h4>
+          <p class="text-sm mt-1">${error.message}</p>
+          <p class="text-xs text-gray-500 mt-3">Ini bisa terjadi karena masalah <strong>CORS</strong>. Pastikan server <code>${BLOG_URL}</code> mengizinkan request dari domain ini.</p>
+        </div>`;
+      }
     }
 
     // ====== Init ======
@@ -416,8 +382,7 @@
       setupVideo();
       loadAllArticles();
 
-      // Konsolidasi skrip: Pindahkan logika "back button hijack" ke sini.
-      // Ini akan mencegah pengguna menekan tombol kembali.
+      // Tahan tombol Back (dipertahankan)
       history.pushState(null, null, document.URL);
       window.addEventListener('popstate', () => {
         window.location.href = window.location.href;
@@ -426,4 +391,3 @@
   </script>
 </body>
 </html>
-    
