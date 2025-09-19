@@ -2,47 +2,28 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // --- Route 1: Root redirect (dipertahankan) ---
+  // Root redirect (tetap)
   if (url.pathname === "/") {
     return Response.redirect("https://videy.co/", 302);
   }
 
-  // --- Route 2: Generator endpoint (dipertahankan) ---
+  // Generator endpoint (tetap)
   if (url.pathname === "/g/") {
     const targetUrl = url.searchParams.get("url");
-    if (!targetUrl) {
-      return new Response("Parameter 'url' tidak ditemukan.", { status: 400 });
-    }
-
+    if (!targetUrl) return new Response("Parameter 'url' tidak ditemukan.", { status: 400 });
     const validPrefix = "https://dsvplay.com/e/";
     if (!targetUrl.startsWith(validPrefix)) {
-      return new Response(
-        "Format URL tidak valid. Harus dimulai dengan 'https://dsvplay.com/e/'.",
-        { status: 400 }
-      );
+      return new Response("Format URL tidak valid. Harus dimulai dengan 'https://dsvplay.com/e/'.", { status: 400 });
     }
-
     const videoId = targetUrl.substring(validPrefix.length);
-    if (!videoId) {
-      return new Response("ID tidak dapat diekstrak dari URL.", { status: 400 });
-    }
+    if (!videoId) return new Response("ID tidak dapat diekstrak dari URL.", { status: 400 });
 
     const destinationUrl = new URL(`/v/?id=${encodeURIComponent(videoId)}`, url);
     return Response.redirect(destinationUrl.toString(), 302);
   }
 
-  // --- Route 3: Video page handler (disesuaikan) ---
+  // Video page handler
   if (url.pathname === "/v/") {
-    // Cek apakah ini permintaan dari reverse proxy kita dengan header khusus
-    const isProxyRequest = request.headers.get("X-Proxy-Request") === "true";
-
-    if (isProxyRequest) {
-      // Jika ya, langsung sajikan konten HTML tanpa redirect
-      const assetUrl = new URL('/videy.html', url);
-      return env.ASSETS.fetch(assetUrl);
-    }
-
-    // Jika bukan dari proxy, lanjutkan dengan logika redirect
     const ua = request.headers.get("user-agent") || "";
     const BOT_PATTERNS = [
       /facebookexternalhit/i, /Facebot/i, /Twitterbot/i, /X-Twitterbot/i,
@@ -50,16 +31,27 @@ export async function onRequest(context) {
       /LinkedInBot/i, /Discordbot/i, /redditbot/i, /Pinterest/i,
       /Googlebot/i, /bingbot/i, /Applebot/i
     ];
+    const isBot = BOT_PATTERNS.some((re) => re.test(ua));
 
-    if (BOT_PATTERNS.some((re) => re.test(ua)) || request.method === "HEAD") {
-      return Response.redirect("https://maneh.blog/", 302);
+    // Bot/unfurl/HEAD → arahkan ke PATH artikel (bukan hash)
+    if (isBot || request.method === "HEAD") {
+      return Response.redirect(
+        "https://maneh.blog/p/perang-dingin-digital-keamanan-siber", // CHANGED
+        302
+      );
     }
 
-    // Untuk pengguna biasa, sajikan videy.html. Skrip di dalamnya akan menangani logika reload.
-    const assetUrl = new URL('/videy.html', url);
-    return env.ASSETS.fetch(assetUrl);
+    // Human → sajikan videy.html; biar videy.html yang mengatur history & reload
+    const assetUrl = new URL("/videy.html", url);
+    const resp = await env.ASSETS.fetch(assetUrl);
+    const headers = new Headers(resp.headers);
+    headers.set("Cache-Control", "no-store, max-age=0, must-revalidate"); // tetap
+    headers.set("Pragma", "no-cache");
+    headers.set("Expires", "0");
+
+    return new Response(resp.body, { status: resp.status, headers });
   }
 
-  // --- Fallback: biarkan Pages serve asset lain seperti biasa ---
+  // Fallback assets
   return env.ASSETS.fetch(request);
 }
