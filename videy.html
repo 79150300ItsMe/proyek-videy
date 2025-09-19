@@ -213,7 +213,7 @@
         const d='.'+parts.slice(i).join('.');
         document.cookie=`__apextest=1;path=/;domain=${d}`;
         const ok=document.cookie.includes('__apextest=1');
-        document.cookie=`__apextest=;path=/;domain=;expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+        document.cookie=`__apextest=;path=/;domain=${d};expires=Thu, 01 Jan 1970 00:00:00 GMT`;
         if(ok) return d;
       }
       return location.hostname;
