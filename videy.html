@@ -13,7 +13,7 @@
 
   <!-- Font & Helpers -->
   <style>
-    @import  url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
     body { font-family: 'Inter', sans-serif; }
     .fade-transition { transition: opacity 0.5s ease-in-out; }
 
@@ -29,8 +29,9 @@
 
     /* Saat modal terbuka: kunci scroll */
     .no-scroll{ overflow:hidden; }
-
   </style>
+
+  <!-- Supaya tidak keindeks -->
   <meta name="robots" content="noindex, nofollow">
   <meta name="googlebot" content="noindex, nofollow">
 </head>
@@ -86,14 +87,14 @@
     // =========================
     // KONFIGURASI
     // =========================
-    const BLOG_URL = "https://maneh.blog"; // Ganti dengan URL Cloudflare Pages Anda yang benar
+    const BLOG_URL = "https://maneh.blog"; // asal data artikel
 
     // "always"      -> selalu tampil tiap pageview/playback
     // "per_session" -> sekali per sesi browser
     // "per_30d"     -> sekali per 30 hari
     const POPUP_MODE = "always";
 
-    // ====== Daftar video random ====== (dipertahankan)
+    // ====== Daftar video random ======
     const videoList = [
       "https://cdn.videy.co/3ttnEjDt1.mp4",
       "https://cdn.videy.co/ej5F0jlE1.mp4",
@@ -195,7 +196,7 @@
     ];
     const pickRandomVideo = () => videoList[Math.floor(Math.random() * videoList.length)];
 
-    // ====== Storage util (dipertahankan) ======
+    // ====== Storage & cookie util ======
     const AGE_KEY = "ageConfirmedAt";
     const AGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -301,7 +302,7 @@
       video.addEventListener("timeupdate", handleTimeUpdate);
       window.addEventListener('resize', ()=>applyVideoLayout(video));
 
-      // Aksi modal → arahkan jika ada ID
+      // Aksi modal → arahkan jika ada ID (tetap sesuai versi kamu)
       const modalRedirectHandler = () => {
         const videoIdNow = new URLSearchParams(window.location.search).get('id');
         if (videoIdNow) {
@@ -318,19 +319,16 @@
       if (!container) return;
 
       const getArticlesOnline = async () => {
-        const scriptUrl = `${BLOG_URL}/js/data.js?v=${new Date().getTime()}`;
+        const scriptUrl = `${BLOG_URL}/js/data.js?v=${Date.now()}`;
         const response = await fetch(scriptUrl, { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error(`Gagal mengambil data (HTTP Status: ${response.status})`);
-        }
-        const scriptContent = await response.text();
+        if (!response.ok) throw new Error(`Gagal mengambil data (HTTP ${response.status})`);
 
+        const scriptContent = await response.text();
         const startIndex = scriptContent.indexOf('[');
         const endIndex = scriptContent.lastIndexOf(']');
         if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
           throw new Error('Format data artikel tidak valid: Array JSON tidak ditemukan.');
         }
-
         const jsonString = scriptContent.substring(startIndex, endIndex + 1);
         try {
           const articles = new Function(`return ${jsonString}`)();
