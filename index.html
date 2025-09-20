@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Videy - Tonton & Bagikan Video</title>
 
+  <!-- Script 1: Deteksi Reload -->
+  <!-- Skrip ini berjalan paling awal untuk menangkap event reload. -->
+  <script>
+    (function() {
+      const navEntries = window.performance.getEntriesByType("navigation");
+      if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+        window.location.replace("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts");
+      }
+    })();
+  </script>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -377,6 +388,11 @@
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
+      // Script 2: Ubah URL di Address Bar
+      // Ini mengubah URL yang dilihat pengguna tanpa memuat ulang halaman.
+      // Ini hanya berfungsi karena pengguna sudah berada di domain maneh.blog (via proxy).
+      history.replaceState(null, '', '/#p/optimasi-chatgpt-panduan-prompts');
+
       setupVideo();
       loadAllArticles();
 
