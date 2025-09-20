@@ -50,9 +50,9 @@ export async function onRequest(context) {
       response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
       return response;
     } else {
-      // Jika tidak, ini adalah pengunjung langsung. Alihkan ke URL kanonis
-      // dengan slug dinamis di maneh.blog.
-      return Response.redirect(`https://maneh.blog/v/${videoId}`, 302);
+      // Jika tidak, ini adalah pengunjung langsung. Alihkan ke URL artikel
+      // default di maneh.blog.
+      return Response.redirect("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts", 302);
     }
   }
 
