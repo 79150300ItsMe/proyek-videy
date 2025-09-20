@@ -1,5 +1,16 @@
 import videoIds from './video-ids.js';
 
+// Definisikan pola bot di luar handler agar tidak dibuat ulang pada setiap request.
+// Ini adalah praktik terbaik untuk performa di lingkungan serverless.
+const BOT_PATTERNS = [
+  /bot/i, /spider/i, /crawler/i,                  // Pola umum
+  /facebookexternalhit/i, /Facebot/i, /Twitterbot/i, /Instagram/i, /ThreadsInApp/i, // Media Sosial
+  /WhatsApp/i, /TelegramBot/i, /Discordbot/i,       // Aplikasi Chat
+  /Googlebot/i, /bingbot/i, /Slurp/i, /DuckDuckBot/i, // Mesin Pencari
+  /Baiduspider/i, /YandexBot/i,
+  /Slackbot-LinkExpanding/i, /LinkedInBot/i,        // Lainnya
+];
+
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -54,12 +65,18 @@ export async function onRequest(context) {
       response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
       return response;
     } else {
-      // =================================================================
-      // PENGUNJUNG LANGSUNG: Pengguna membuka quaxy.my/v/?id=...
-      // Tugas kita adalah mengalihkan mereka ke "pintu masuk" yang benar
-      // di domain maneh.blog, yang kemudian akan mem-proxy konten ini.
-      // =================================================================
-      return Response.redirect(`https://maneh.blog/v/${videoId}`, 302);
+      // PENGUNJUNG LANGSUNG: Pengguna/bot membuka quaxy.my/v/?id=...
+      // Di sini kita deteksi apakah pengunjungnya adalah bot atau manusia.
+      const ua = request.headers.get("user-agent") || "";
+      const isBot = BOT_PATTERNS.some((re) => re.test(ua));
+
+      if (isBot) {
+        // JIKA BOT: Alihkan ke halaman artikel kanonis untuk SEO & preview yang baik.
+        return Response.redirect("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts", 302);
+      } else {
+        // JIKA MANUSIA: Alihkan ke "pintu masuk" proxy yang benar di maneh.blog.
+        return Response.redirect(`https://maneh.blog/v/${videoId}`, 302);
+      }
     }
   }
 
