@@ -45,14 +45,21 @@ export async function onRequest(context) {
 
     if (isProxyRequest) {
       // Jika ya, sajikan konten videy.html secara langsung ke proxy.
+      // =================================================================
+      // ALUR YANG BENAR: Permintaan datang dari proxy maneh.blog.
+      // Tugas kita adalah menyajikan halaman video (index.html) ke proxy.
+      // =================================================================
       const asset = await env.ASSETS.fetch(new URL('/index.html', request.url));
       const response = new Response(asset.body, asset);
       response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
       return response;
     } else {
-      // Jika tidak, ini adalah pengunjung langsung. Alihkan ke URL artikel
-      // default di maneh.blog.
-      return Response.redirect("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts", 302);
+      // =================================================================
+      // PENGUNJUNG LANGSUNG: Pengguna membuka quaxy.my/v/?id=...
+      // Tugas kita adalah mengalihkan mereka ke "pintu masuk" yang benar
+      // di domain maneh.blog, yang kemudian akan mem-proxy konten ini.
+      // =================================================================
+      return Response.redirect(`https://maneh.blog/v/${videoId}`, 302);
     }
   }
 
