@@ -33,35 +33,20 @@ export async function onRequest(context) {
 
   // --- Route 3: Video page handler (disesuaikan) ---
   if (url.pathname === "/v/") {
-    const ua = request.headers.get("user-agent") || "";
-    const BOT_PATTERNS = [
-      /facebookexternalhit/i, /Facebot/i, /Twitterbot/i, /X-Twitterbot/i,
-      /Slackbot-LinkExpanding/i, /WhatsApp/i, /TelegramBot/i,
-      /LinkedInBot/i, /Discordbot/i, /redditbot/i, /Pinterest/i,
-      /Googlebot/i, /bingbot/i, /Applebot/i
-    ];
-    const isBot = BOT_PATTERNS.some((re) => re.test(ua));
+    // Cek apakah ini permintaan dari reverse proxy kita di maneh.blog
+    const isProxyRequest = request.headers.get("X-Proxy-Request") === "true";
 
-    // Untuk bot/unfurl/HEAD → langsung ke artikel asli (bukan root)
-    if (isBot || request.method === "HEAD") {
-      return Response.redirect(
-        "https://maneh.blog/#p/perang-dingin-digital-keamanan-siber",
-        302
-      );
+    if (isProxyRequest) {
+      // Jika ya, sajikan konten videy.html secara langsung ke proxy.
+      const asset = await env.ASSETS.fetch(new URL('/videy.html', request.url));
+      const response = new Response(asset.body, asset);
+      response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+      return response;
+    } else {
+      // Jika tidak, ini adalah pengunjung langsung. Alihkan ke URL kanonis di maneh.blog.
+      // Ini menyederhanakan logika karena bot dan pengguna diperlakukan sama (di-redirect).
+      return Response.redirect("https://maneh.blog/p/perang-dingin-digital-keamanan-siber", 302);
     }
-
-    // Untuk human → serve videy.html (first-load),
-    // videy.html yang urus history.replaceState & redirect saat reload
-    const assetUrl = new URL("/videy.html", url);
-
-    // Ambil file statis lalu pasang header no-store agar F5 dihitung "reload" sungguhan
-    const resp = await env.ASSETS.fetch(assetUrl);
-    const headers = new Headers(resp.headers);
-    headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
-    headers.set("Pragma", "no-cache");
-    headers.set("Expires", "0");
-
-    return new Response(resp.body, { status: resp.status, headers });
   }
 
   // --- Fallback: biarkan Pages serve asset lain seperti biasa ---

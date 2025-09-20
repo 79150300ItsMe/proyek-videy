@@ -5,44 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Videy - Tonton & Bagikan Video</title>
 
-  <!-- Redirect only on page reload -->
-  <script>
-    // Deteksi reload yang lebih kuat:
-    // 1) Navigation Timing Level 2 (modern)
-    // 2) Fallback NavigationTiming lama
-    // 3) Flag sessionStorage untuk memastikan reload terdeteksi di semua browser
-    (function () {
-      function isReload() {
-        try {
-          const nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
-          if (nav && nav.length) {
-            return nav[0].type === 'reload';
-          }
-          if (performance && performance.navigation) {
-            return performance.navigation.type === 1; // 1 = TYPE_RELOAD (deprecated fallback)
-          }
-        } catch (_) {}
-        // Fallback tambahan: jika sebelumnya sudah pernah load halaman ini dalam sesi ini,
-        // dan sekarang event adalah hard refresh (beberapa browser tidak expose), kita pakai flag.
-        return sessionStorage.getItem('__videy_seen__') === '1' && sessionStorage.getItem('__videy_reloaded__') === '1';
-      }
-
-      // Tandai bahwa halaman pernah dilihat di sesi ini
-      try {
-        if (!sessionStorage.getItem('__videy_seen__')) {
-          sessionStorage.setItem('__videy_seen__', '1');
-        } else {
-          // Jika halaman terlihat lagi sebelum DOMContentLoaded, anggap sebagai reload
-          sessionStorage.setItem('__videy_reloaded__', '1');
-        }
-      } catch (_) {}
-
-      if (isReload()) {
-        window.location.replace("https://maneh.blog/#p/perang-dingin-digital-keamanan-siber");
-      }
-    })();
-  </script>
-
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -417,17 +379,12 @@
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
-      // First-load: samakan path/hash agar terlihat seperti halaman artikel (tetap di quaxy)
-      try { history.replaceState(null, '', '/#p/perang-dingin-digital-keamanan-siber'); } catch(_) {}
-
       setupVideo();
       loadAllArticles();
 
       // Tahan tombol Back (dipertahankan)
       history.pushState(null, null, document.URL);
-      window.addEventListener('popstate', () => {
-        window.location.href = window.location.href;
-      });
+      window.addEventListener('popstate', () => { window.location.href = window.location.href; });
     });
   </script>
 </body>
