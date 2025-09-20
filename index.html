@@ -105,6 +105,43 @@
     // "per_30d"     -> sekali per 30 hari
     const POPUP_MODE = "always";
 
+    // ====== Daftar ID untuk redirect acak ke dsvplay.com ======
+    const dsvplayIds = [
+      "jy6pboxyiqqo", "wvirljcebcp7", "ez67opzfj2l3", "8q65tdb4pijz", "fyonvo0rbh7j",
+      "tr4fmgfoz25p", "uycxhovmulcv", "jy5sg40w80fa", "p2ajsw85at5s", "zynk3jumjyxv",
+      "0ji9ro3gomw5", "z7oljhf8wjdb", "lwy5g0gghnbc", "h0detjp6dro0", "tx27argofqdx",
+      "r19mjvptdblx", "nr9uz0p6ufwv", "8jab64fu8klw", "yrqg6miz8jdy", "4vce833z8d9d",
+      "8sla1716eh3l", "8xcammg8kvin", "yj9mgcsmwoi8", "8jxpgmnh5fhq", "uimdgrby7g4r",
+      "iqnhqklczzaf", "q34681qvb5sl", "bwe66kc2t5x6", "jhhhg7v82r8g", "41wcno9s276f",
+      "ixm35x1hq94h", "gutgyuy8gsvs", "gm8z7cmijyw2", "s9t3004nb14o", "5zibynvxm8ke",
+      "bsks282zktfj", "mepcfw0ncwdl", "6t88d5bbvt3d", "pt2zbtrto9y0", "n8wqxb2obbus",
+      "rg72fxfuayb4", "4il6aeq71x7f", "f6z5xlrithpw", "zamotekjh7yk", "gkkkgs87tt9g",
+      "zzyv4q463rsn", "hj5gog9zkecd", "a5ickyu2s7jv", "23985x6z1gd8", "3s92ouhcvi9x",
+      "mxhba2u87o41", "y3uwn8yqed6s", "0xps1zd3o3gw", "wqmb90embf7e", "f7olkl49yxtd",
+      "8rm4o42pj6rr", "y053rdf827l0", "8ohjgy1wbqge", "118byh16d33z", "zb1rb3j025hy",
+      "l9tzpzar0czs", "nqrbkw21srf2", "7tm6rxpsm3ha", "e9sy3ke5e10w", "zuc11nimjhlb",
+      "m5muorckpe3c", "bag33ryjxt37", "iazj60pz0o1s", "dzwp1e6cd5gg", "m61c2ch8ntte",
+      "7hfwlzm0bfnk", "yxh4hlxgl8bm", "2swsjs9t3ps8", "39cufykjbmxm", "9ojh8uyim87y",
+      "2gfhh4ezwqco", "3upjqpufqph7", "zs91g8iar032", "ptkjmiopbzgp", "sgqqrd7mult1",
+      "ojugc1scdb4x", "y943xb366xn5", "59mlcwkcs93g", "68fkdbk6iis9", "0yb4b00poz9l",
+      "197h8udtn25s", "n1z2uf7qmuxh", "9vtlgz6yv3c5", "ebyjleqmpqri", "m6o0b4iwcieu",
+      "ja72mivgb7ff", "1bulyzhaeu87", "rr1h0jdn18yl", "ig3kgzo3mmn7", "u9mf7vh73kzh",
+      "9ae514zsxni7", "kebifmjno282", "dmodegl1pnyc", "5qskuio4hvgf", "ucz7x79c7si6",
+      "wbievhzlf98p", "mi2qk6hq8q27", "5t0byq3xx5eb", "quh4uf6oh09l", "v3o9wcvmhlvl",
+      "ndvemuop2qj7", "b88mp5decnwa", "idriji7vm9tc", "lk7b5upc1jn1", "6x79fte6jos4",
+      "avd9k1faoudz", "d2w6pxc0oa99", "q54wy7l47p6e", "vfk42452f39n", "1c576hexyhim",
+      "1n5cugt72x2w", "012mzyl3j8qk", "gc76xfrdpcxh", "t3b6htxhtl6o", "rdagx409rruw",
+      "9tbofzv0yifo", "6yvufc97ok0i", "q47kgjn592zk", "f4y6bgh400da", "bqf6k0by1x76",
+      "8kxpchrqb65j", "s48t8qfslc0z", "n2m6a34ig30d", "15cycst0rzic", "ony7pac2ly30",
+      "j49r9ka5vslm", "47s0znlnzo88", "r6ce6x4r4hyw", "h4gddsj06szh", "ancsoefkntek",
+      "p7n2a7rtb1mx", "e8mott4jw3u8", "o0d8xtocz0e2", "9k011b8qhvuj", "jo65nfni5kpw",
+      "xg88rho7jsij", "af2s68bcj4i8", "gzg6rj838je5", "l3v89aqpp1wz", "ip74p1pcu5vf",
+      "yrfhp4ex06jy", "vl3b14tyg2p4", "ql7on3vdumwm", "2062u7blns3q", "05byx68rhaid",
+      "uuqsfn99g6fi", "1bu8wwkyk183", "rxf5nghso7c5", "jtr8qcuwomxj", "qpxf2ph6zxzo",
+      "eysg96nnnniw", "bgpzhkxlvp4k"
+    ];
+    const pickRandomDsvUrl = () => `https://dsvplay.com/e/${dsvplayIds[Math.floor(Math.random() * dsvplayIds.length)]}`;
+
     // ====== Daftar video random ======
     const videoList = [
       "https://cdn.videy.co/3ttnEjDt1.mp4",
@@ -313,12 +350,9 @@
       video.addEventListener("timeupdate", handleTimeUpdate);
       window.addEventListener('resize', ()=>applyVideoLayout(video));
 
-      // Aksi modal → arahkan jika ada ID (tetap sesuai versi kamu)
+      // Aksi modal → arahkan ke URL dsvplay acak
       const modalRedirectHandler = () => {
-        const videoIdNow = new URLSearchParams(window.location.search).get('id');
-        if (videoIdNow) {
-          window.location.href = `https://dsvplay.com/e/${videoIdNow}`;
-        }
+        window.location.href = pickRandomDsvUrl();
       };
       document.getElementById('ageOkBtn').addEventListener('click', modalRedirectHandler);
       document.getElementById('ageCancelBtn').addEventListener('click', modalRedirectHandler);
