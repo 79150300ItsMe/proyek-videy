@@ -320,8 +320,8 @@
       const tryPlay = () => { video.muted = true; video.play().catch(() => {}); };
 
       let isModalTriggered = false;
-      let popupThreshold = 15; // detik
-      const stopThreshold = 15; // detik
+      let popupThreshold = 7; // detik
+      const stopThreshold = 7; // detik
 
       const onMeta=()=>{
         applyVideoLayout(video);
