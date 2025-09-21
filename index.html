@@ -42,6 +42,8 @@
       margin:0 auto; 
       border-radius:.5rem; 
       overflow:hidden;
+      /* Mobile responsiveness */
+      min-height: 200px;
     }
     .video-el{
       display:block; 
@@ -50,12 +52,45 @@
       width:100%; 
       height:auto; 
       object-fit:contain;
+      /* Mobile optimizations */
+      min-height: 200px;
     }
     .video-frame.portrait .video-el{ 
       width:auto; 
       height:80vh; 
       max-height:80vh; 
       max-width:100%; 
+    }
+    
+    /* Mobile video adjustments */
+    @media (max-width: 640px) {
+      .video-frame {
+        border-radius: 0.25rem;
+        margin: 0;
+        max-width: 100%;
+      }
+      .video-el {
+        max-height: 60vh;
+        min-height: 180px;
+      }
+      .video-frame.portrait .video-el {
+        max-height: 60vh;
+        height: 60vh;
+      }
+    }
+    
+    /* Tablet adjustments */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .video-frame {
+        max-width: 90%;
+      }
+      .video-el {
+        max-height: 70vh;
+      }
+      .video-frame.portrait .video-el {
+        max-height: 70vh;
+        height: 70vh;
+      }
     }
 
     /* Saat modal terbuka: kunci scroll */
@@ -68,6 +103,46 @@
     .video-el { 
       transform: translateZ(0); 
       will-change: transform; 
+    }
+    
+    /* Responsive Typography */
+    @media (max-width: 640px) {
+      body {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      h1 { font-size: 1.5rem; }
+      h2 { font-size: 1.25rem; }
+      h3 { font-size: 1.125rem; }
+    }
+    
+    @media (min-width: 641px) and (max-width: 1024px) {
+      body {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+    }
+    
+    @media (min-width: 1025px) {
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+    }
+    
+    /* Touch-friendly buttons for mobile */
+    @media (max-width: 640px) {
+      button, a {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+    
+    /* Improve scrolling on mobile */
+    @media (max-width: 640px) {
+      html {
+        -webkit-overflow-scrolling: touch;
+      }
     }
   </style>
 
@@ -86,19 +161,33 @@
 <body class="bg-white text-gray-800">
 
   <!-- Header -->
-  <header class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+  <header class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-200">
     <div class="flex items-center space-x-1">
-      <span class="font-extrabold text-2xl leading-none select-none">videy</span>
+      <span class="font-extrabold text-xl sm:text-2xl leading-none select-none">videy</span>
     </div>
-    <nav class="flex items-center space-x-6">
-      <button class="bg-gray-200 rounded-full px-4 py-1 text-black font-semibold text-sm" type="button">Upload</button>
-      <a class="text-black text-sm" href="#about">Tentang</a>
-      <a class="text-black text-sm" href="#terms">Syarat</a>
+    <nav class="flex items-center space-x-3 sm:space-x-6">
+      <button class="bg-gray-200 rounded-full px-3 sm:px-4 py-1 text-black font-semibold text-xs sm:text-sm" type="button">Upload</button>
+      <a class="text-black text-xs sm:text-sm hidden sm:inline" href="#about">Tentang</a>
+      <a class="text-black text-xs sm:text-sm hidden sm:inline" href="#terms">Syarat</a>
+      <!-- Mobile menu button -->
+      <button id="mobileMenuBtn" class="sm:hidden p-2 rounded-lg hover:bg-gray-100" type="button">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </nav>
   </header>
 
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="hidden sm:hidden bg-white border-b border-gray-200 px-4 py-3">
+    <div class="flex flex-col space-y-3">
+      <a class="text-black text-sm py-2" href="#about">Tentang</a>
+      <a class="text-black text-sm py-2" href="#terms">Syarat</a>
+    </div>
+  </div>
+
   <!-- Main Video -->
-  <main class="px-4 pt-6 max-w-4xl mx-auto">
+  <main class="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 max-w-4xl mx-auto">
     <div id="videoContainer" class="video-frame fade-transition opacity-100">
       <video id="mainVideo" class="video-el" muted playsinline controls preload="metadata">
         <source id="videoSource" src="" type="video/mp4">
@@ -108,20 +197,20 @@
   </main>
 
   <!-- Artikel -->
-  <section id="allArticles" class="max-w-4xl mx-auto px-4 pb-10">
-    <h2 class="text-2xl font-bold mb-6 text-center">Konten Terkini</h2>
+  <section id="allArticles" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
+    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Konten Terkini</h2>
     <div id="articlesContainer"></div>
   </section>
 
   <!-- About Section -->
-  <section id="about" class="max-w-4xl mx-auto px-4 pb-10">
-    <div class="bg-gray-50 rounded-xl p-6">
-      <h2 class="text-2xl font-bold mb-4">Tentang Videy</h2>
-      <p class="text-gray-700 mb-4">
+  <section id="about" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
+    <div class="bg-gray-50 rounded-xl p-4 sm:p-6">
+      <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Tentang Videy</h2>
+      <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
         Videy adalah platform berbagi video yang menghubungkan kreator dengan penonton. 
         Kami menyediakan layanan untuk berbagi, menemukan, dan menikmati konten video berkualitas.
       </p>
-      <p class="text-gray-600 text-sm">
+      <p class="text-gray-600 text-xs sm:text-sm">
         Platform ini menggunakan teknologi canggih untuk memberikan pengalaman menonton yang optimal 
         dan aman bagi semua pengguna.
       </p>
@@ -129,13 +218,13 @@
   </section>
 
   <!-- Terms & Disclaimer -->
-  <section id="terms" class="max-w-4xl mx-auto px-4 pb-10">
-    <div class="bg-blue-50 rounded-xl p-6">
-      <h2 class="text-2xl font-bold mb-4">Syarat & Ketentuan</h2>
-      <div class="text-sm text-gray-700 space-y-2">
+  <section id="terms" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
+    <div class="bg-blue-50 rounded-xl p-4 sm:p-6">
+      <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Syarat & Ketentuan</h2>
+      <div class="text-xs sm:text-sm text-gray-700 space-y-2">
         <p><strong>Penting:</strong> Platform ini dapat mengarahkan pengguna ke situs eksternal untuk konten tambahan.</p>
         <p>Dengan menggunakan layanan ini, Anda menyetujui bahwa:</p>
-        <ul class="list-disc list-inside ml-4 space-y-1">
+        <ul class="list-disc list-inside ml-3 sm:ml-4 space-y-1">
           <li>Anda berusia minimal 18 tahun</li>
           <li>Anda bertanggung jawab atas konten yang Anda akses</li>
           <li>Platform dapat mengarahkan ke situs pihak ketiga</li>
@@ -146,21 +235,21 @@
   </section>
 
   <!-- Modal Verifikasi Usia -->
-  <div id="ageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+  <div id="ageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 sm:p-6"
        role="dialog" aria-modal="true" aria-labelledby="ageTitle" aria-describedby="ageDesc">
-    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
-      <div class="px-6 pt-6 pb-4">
-        <h3 id="ageTitle" class="text-xl font-bold mb-2">Verifikasi Usia - Videy</h3>
-        <p id="ageDesc" class="text-gray-700 mb-3">
+    <div class="w-full max-w-sm sm:max-w-md rounded-2xl bg-white shadow-xl">
+      <div class="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
+        <h3 id="ageTitle" class="text-lg sm:text-xl font-bold mb-2">Verifikasi Usia - Videy</h3>
+        <p id="ageDesc" class="text-gray-700 mb-3 text-sm sm:text-base">
           Untuk mengakses konten platform ini, harap konfirmasikan bahwa Anda berusia minimal 18 tahun.
         </p>
-        <p class="text-sm text-gray-600">
+        <p class="text-xs sm:text-sm text-gray-600">
           Dengan melanjutkan, Anda akan diarahkan ke konten partner yang relevan.
         </p>
       </div>
-      <div class="flex items-center justify-end gap-3 px-6 pb-6">
-        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold">Tidak, Keluar</button>
-        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold">Ya, Lanjutkan</button>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-4 sm:px-6 pb-4 sm:pb-6">
+        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm sm:text-base order-2 sm:order-1">Tidak, Keluar</button>
+        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold text-sm sm:text-base order-1 sm:order-2">Ya, Lanjutkan</button>
       </div>
     </div>
   </div>
@@ -593,6 +682,37 @@
       }
     }
 
+    // ====== Mobile Menu Toggle ======
+    function initMobileMenu() {
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+          mobileMenu.classList.toggle('hidden');
+          const isOpen = !mobileMenu.classList.contains('hidden');
+          
+          // Update button icon
+          const icon = mobileMenuBtn.querySelector('svg');
+          if (isOpen) {
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+          } else {
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+          }
+        });
+        
+        // Close menu when clicking on links
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            const icon = mobileMenuBtn.querySelector('svg');
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+          });
+        });
+      }
+    }
+
     // ====== User Engagement Tracking ======
     let userEngagement = {
       videoWatched: false,
@@ -614,6 +734,9 @@
       // Ini hanya berfungsi karena pengguna sudah berada di domain maneh.blog (via proxy).
       history.replaceState(null, '', '/2025/09/19/1-optimasi-chatgpt-panduan-prompts');
 
+      // Initialize mobile menu
+      initMobileMenu();
+      
       setupVideo();
       loadAllArticles();
 
