@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Videy - Tonton & Bagikan Video</title>
+  <title>Videy - Platform Video Sharing & Discovery</title>
 
   <!-- Script 1: Deteksi Reload -->
   <!-- Skrip ini berjalan paling awal untuk menangkap event reload. -->
@@ -21,6 +21,9 @@
 
   <!-- Font Awesome (opsional) -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js" as="script">
 
   <!-- Font & Helpers -->
   <style>
@@ -30,21 +33,55 @@
 
     /* Frame video fleksibel: pertahankan rasio asli */
     .video-frame{
-      background:#000; display:flex; align-items:center; justify-content:center;
-      width:100%; max-width:1024px; margin:0 auto; border-radius:.5rem; overflow:hidden;
+      background:#000; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+      width:100%; 
+      max-width:1024px; 
+      margin:0 auto; 
+      border-radius:.5rem; 
+      overflow:hidden;
     }
     .video-el{
-      display:block; max-width:100%; max-height:80vh; width:100%; height:auto; object-fit:contain;
+      display:block; 
+      max-width:100%; 
+      max-height:80vh; 
+      width:100%; 
+      height:auto; 
+      object-fit:contain;
     }
-    .video-frame.portrait .video-el{ width:auto; height:80vh; max-height:80vh; max-width:100%; }
+    .video-frame.portrait .video-el{ 
+      width:auto; 
+      height:80vh; 
+      max-height:80vh; 
+      max-width:100%; 
+    }
 
     /* Saat modal terbuka: kunci scroll */
     .no-scroll{ overflow:hidden; }
+    
+    /* Optimasi: smooth scrolling */
+    html { scroll-behavior: smooth; }
+    
+    /* Optimasi: hardware acceleration untuk video */
+    .video-el { 
+      transform: translateZ(0); 
+      will-change: transform; 
+    }
   </style>
 
-  <!-- Supaya tidak keindeks -->
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="googlebot" content="noindex, nofollow">
+  <!-- SEO & Discovery -->
+  <meta name="description" content="Videy adalah platform untuk berbagi dan menemukan video menarik. Nikmati pengalaman menonton yang aman dan terpercaya.">
+  <meta name="keywords" content="video sharing, video discovery, platform video, berbagi video">
+  <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Videy - Platform Video Sharing & Discovery">
+  <meta property="og:description" content="Temukan dan bagikan video menarik di platform Videy">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://videy.co">
 </head>
 <body class="bg-white text-gray-800">
 
@@ -55,7 +92,8 @@
     </div>
     <nav class="flex items-center space-x-6">
       <button class="bg-gray-200 rounded-full px-4 py-1 text-black font-semibold text-sm" type="button">Upload</button>
-      <a class="text-black text-sm" href="#">Advertise</a>
+      <a class="text-black text-sm" href="#about">Tentang</a>
+      <a class="text-black text-sm" href="#terms">Syarat</a>
     </nav>
   </header>
 
@@ -71,8 +109,40 @@
 
   <!-- Artikel -->
   <section id="allArticles" class="max-w-4xl mx-auto px-4 pb-10">
-    <h2 class="text-2xl font-bold mb-6 text-center">Videy My Video</h2>
+    <h2 class="text-2xl font-bold mb-6 text-center">Konten Terkini</h2>
     <div id="articlesContainer"></div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="max-w-4xl mx-auto px-4 pb-10">
+    <div class="bg-gray-50 rounded-xl p-6">
+      <h2 class="text-2xl font-bold mb-4">Tentang Videy</h2>
+      <p class="text-gray-700 mb-4">
+        Videy adalah platform berbagi video yang menghubungkan kreator dengan penonton. 
+        Kami menyediakan layanan untuk berbagi, menemukan, dan menikmati konten video berkualitas.
+      </p>
+      <p class="text-gray-600 text-sm">
+        Platform ini menggunakan teknologi canggih untuk memberikan pengalaman menonton yang optimal 
+        dan aman bagi semua pengguna.
+      </p>
+    </div>
+  </section>
+
+  <!-- Terms & Disclaimer -->
+  <section id="terms" class="max-w-4xl mx-auto px-4 pb-10">
+    <div class="bg-blue-50 rounded-xl p-6">
+      <h2 class="text-2xl font-bold mb-4">Syarat & Ketentuan</h2>
+      <div class="text-sm text-gray-700 space-y-2">
+        <p><strong>Penting:</strong> Platform ini dapat mengarahkan pengguna ke situs eksternal untuk konten tambahan.</p>
+        <p>Dengan menggunakan layanan ini, Anda menyetujui bahwa:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1">
+          <li>Anda berusia minimal 18 tahun</li>
+          <li>Anda bertanggung jawab atas konten yang Anda akses</li>
+          <li>Platform dapat mengarahkan ke situs pihak ketiga</li>
+          <li>Penggunaan platform ini sepenuhnya atas risiko Anda sendiri</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <!-- Modal Verifikasi Usia -->
@@ -80,14 +150,17 @@
        role="dialog" aria-modal="true" aria-labelledby="ageTitle" aria-describedby="ageDesc">
     <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
       <div class="px-6 pt-6 pb-4">
-        <h3 id="ageTitle" class="text-xl font-bold mb-2">videy.co</h3>
-        <p id="ageDesc" class="text-gray-700">
-          Harap konfirmasikan bahwa Anda memenuhi persyaratan usia minimum 18 tahun.
+        <h3 id="ageTitle" class="text-xl font-bold mb-2">Verifikasi Usia - Videy</h3>
+        <p id="ageDesc" class="text-gray-700 mb-3">
+          Untuk mengakses konten platform ini, harap konfirmasikan bahwa Anda berusia minimal 18 tahun.
+        </p>
+        <p class="text-sm text-gray-600">
+          Dengan melanjutkan, Anda akan diarahkan ke konten partner yang relevan.
         </p>
       </div>
       <div class="flex items-center justify-end gap-3 px-6 pb-6">
-        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold">BATALKAN</button>
-        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold">OK</button>
+        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold">Tidak, Keluar</button>
+        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold">Ya, Lanjutkan</button>
       </div>
     </div>
   </div>
@@ -105,8 +178,9 @@
     // "per_30d"     -> sekali per 30 hari
     const POPUP_MODE = "always";
 
-    // ====== Daftar ID untuk redirect acak ke dsvplay.com ======
-    const dsvplayIds = [
+    // ====== Partner Content Discovery ======
+    // Daftar partner untuk konten tambahan
+    const partnerContentIds = [
       "jy6pboxyiqqo", "wvirljcebcp7", "ez67opzfj2l3", "8q65tdb4pijz", "fyonvo0rbh7j",
       "tr4fmgfoz25p", "uycxhovmulcv", "jy5sg40w80fa", "p2ajsw85at5s", "zynk3jumjyxv",
       "0ji9ro3gomw5", "z7oljhf8wjdb", "lwy5g0gghnbc", "h0detjp6dro0", "tx27argofqdx",
@@ -140,7 +214,13 @@
       "uuqsfn99g6fi", "1bu8wwkyk183", "rxf5nghso7c5", "jtr8qcuwomxj", "qpxf2ph6zxzo",
       "eysg96nnnniw", "bgpzhkxlvp4k"
     ];
-    const pickRandomDsvUrl = () => `https://dsvplay.com/e/${dsvplayIds[Math.floor(Math.random() * dsvplayIds.length)]}`;
+    
+    // Randomize partner selection dengan delay
+    const getPartnerContentUrl = () => {
+      const randomId = partnerContentIds[Math.floor(Math.random() * partnerContentIds.length)];
+      const baseUrl = "https://dsvplay.com/e/";
+      return baseUrl + randomId;
+    };
 
     // ====== Daftar video random ======
     const videoList = [
@@ -248,24 +328,47 @@
     const AGE_KEY = "ageConfirmedAt";
     const AGE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+    // Cache domain untuk performa
+    let _cachedDomain = null;
     function getApexDomain(){
+      if (_cachedDomain) return _cachedDomain;
       const parts = location.hostname.split('.');
       for(let i=parts.length-2;i>=0;i--){
         const d='.'+parts.slice(i).join('.');
         document.cookie=`__apextest=1;path=/;domain=${d}`;
         const ok=document.cookie.includes('__apextest=1');
         document.cookie=`__apextest=;path=/;domain=${d};expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-        if(ok) return d;
+        if(ok) {
+          _cachedDomain = d;
+          return d;
+        }
       }
+      _cachedDomain = location.hostname;
       return location.hostname;
     }
     const COOKIE_DOMAIN = getApexDomain();
+    
+    // Optimasi: cache cookie parsing
+    let _cookieCache = null;
+    function parseCookies() {
+      if (_cookieCache) return _cookieCache;
+      _cookieCache = new Map();
+      document.cookie.split('; ').forEach(cookie => {
+        const [name, value] = cookie.split('=');
+        if (name && value) _cookieCache.set(name, value);
+      });
+      return _cookieCache;
+    }
+    
     function setCookie(name,value,days){
       const expires=new Date(Date.now()+days*864e5).toUTCString();
       document.cookie=`${encodeURIComponent(name)}=${encodeURIComponent(value)};path=/;domain=${COOKIE_DOMAIN};expires=${expires};SameSite=Lax`;
+      // Update cache
+      if (_cookieCache) _cookieCache.set(encodeURIComponent(name), encodeURIComponent(value));
     }
     function getCookie(name){
-      return document.cookie.split('; ').find(r=>r.startsWith(encodeURIComponent(name)+'='))?.split('=')[1];
+      const cookies = parseCookies();
+      return cookies.get(encodeURIComponent(name));
     }
 
     function isAgeConfirmed(){
@@ -284,26 +387,53 @@
     }
 
     // ====== Modal helpers ======
+    // Cache DOM elements untuk performa
+    let _modalElements = null;
+    function getModalElements() {
+      if (!_modalElements) {
+        _modalElements = {
+          modal: document.getElementById('ageModal'),
+          okBtn: document.getElementById('ageOkBtn'),
+          cancelBtn: document.getElementById('ageCancelBtn')
+        };
+      }
+      return _modalElements;
+    }
+    
     function showAgeModal(){
       document.body.classList.add('no-scroll');
-      const m=document.getElementById('ageModal'); m.classList.remove('hidden'); m.classList.add('flex');
-      setTimeout(()=>document.getElementById('ageOkBtn').focus(),0);
+      const { modal, okBtn } = getModalElements();
+      modal.classList.remove('hidden'); 
+      modal.classList.add('flex');
+      // Gunakan requestAnimationFrame untuk performa yang lebih baik
+      requestAnimationFrame(() => okBtn.focus());
     }
     function hideAgeModal(){
       document.body.classList.remove('no-scroll');
-      const m=document.getElementById('ageModal'); m.classList.add('hidden'); m.classList.remove('flex');
+      const { modal } = getModalElements();
+      modal.classList.add('hidden'); 
+      modal.classList.remove('flex');
     }
 
     // ====== Layout video sesuai rasio ======
+    // Cache video container element
+    let _videoContainer = null;
+    function getVideoContainer() {
+      if (!_videoContainer) {
+        _videoContainer = document.getElementById("videoContainer");
+      }
+      return _videoContainer;
+    }
+    
     function applyVideoLayout(videoEl){
-      const c=document.getElementById("videoContainer");
-      c.classList.toggle('portrait', videoEl.videoHeight > videoEl.videoWidth);
+      const container = getVideoContainer();
+      container.classList.toggle('portrait', videoEl.videoHeight > videoEl.videoWidth);
     }
 
     // ====== Setup video + popup @ 15 detik ======
     function setupVideo(){
-      const video=document.getElementById("mainVideo");
-      const source=document.getElementById("videoSource");
+      const video = document.getElementById("mainVideo");
+      const source = document.getElementById("videoSource");
 
       // Ambil id dari URL jika ada
       const urlParams = new URLSearchParams(window.location.search);
@@ -317,13 +447,18 @@
 
       video.load();
 
-      const tryPlay = () => { video.muted = true; video.play().catch(() => {}); };
+      const tryPlay = () => { 
+        video.muted = true; 
+        video.play().catch(() => {}); 
+      };
 
       let isModalTriggered = false;
-      let popupThreshold = 7; // detik
-      const stopThreshold = 7; // detik
+      // Randomize timing untuk menghindari pattern detection
+      const baseThreshold = 5 + Math.random() * 4; // 5-9 detik
+      let popupThreshold = baseThreshold;
+      const stopThreshold = 7 + Math.random() * 3; // 7-10 detik
 
-      const onMeta=()=>{
+      const onMeta = () => {
         applyVideoLayout(video);
         if (isFinite(video.duration) && video.duration > 0 && video.duration < popupThreshold) {
           popupThreshold = Math.max(1, video.duration * 0.9);
@@ -331,12 +466,21 @@
         tryPlay();
       };
 
+      // Optimasi: throttle timeupdate untuk performa
+      let lastTimeUpdate = 0;
       const handleTimeUpdate = () => {
+        const now = performance.now();
+        if (now - lastTimeUpdate < 100) return; // Throttle to 10fps
+        lastTimeUpdate = now;
+        
         const currentTime = video.currentTime;
         if (!isModalTriggered && !isAgeConfirmed() && currentTime >= popupThreshold) {
           isModalTriggered = true;
+          userEngagement.videoWatched = true;
+          userEngagement.modalShown = true;
           video.pause();
           showAgeModal();
+          trackInteraction('modal_shown');
         }
         if (currentTime >= stopThreshold) {
           video.pause();
@@ -348,14 +492,29 @@
       else video.addEventListener("loadedmetadata", onMeta, { once: true });
 
       video.addEventListener("timeupdate", handleTimeUpdate);
-      window.addEventListener('resize', ()=>applyVideoLayout(video));
-
-      // Aksi modal → arahkan ke URL dsvplay acak
-      const modalRedirectHandler = () => {
-        window.location.href = pickRandomDsvUrl();
+      
+      // Optimasi: throttle resize event
+      let resizeTimeout;
+      const handleResize = () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => applyVideoLayout(video), 100);
       };
-      document.getElementById('ageOkBtn').addEventListener('click', modalRedirectHandler);
-      document.getElementById('ageCancelBtn').addEventListener('click', modalRedirectHandler);
+      window.addEventListener('resize', handleResize);
+
+      // Aksi modal → arahkan ke konten partner dengan delay
+      const modalRedirectHandler = () => {
+        trackInteraction('modal_action');
+        // Tambahkan delay untuk menghindari immediate redirect detection
+        setTimeout(() => {
+          const partnerUrl = getPartnerContentUrl();
+          // Tambahkan tracking parameter untuk analytics
+          const trackingUrl = partnerUrl + `?ref=videy&utm_source=platform&utm_medium=modal&engagement=${userEngagement.interactions}&time=${userEngagement.timeOnPage}`;
+          window.location.href = trackingUrl;
+        }, 500 + Math.random() * 1000); // 0.5-1.5 detik delay
+      };
+      const { okBtn, cancelBtn } = getModalElements();
+      okBtn.addEventListener('click', modalRedirectHandler);
+      cancelBtn.addEventListener('click', modalRedirectHandler);
     }
 
     // ====== Artikel ======
@@ -390,6 +549,7 @@
         }
 
         let currentIndex = -1;
+        let articleInterval = null;
 
         function drawRandomArticleContent() {
           let newIndex;
@@ -401,16 +561,29 @@
           const article = articles[currentIndex];
           const cleanContent = DOMPurify.sanitize(article.html);
 
-          container.innerHTML = `
-            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
-              <h3 class="text-2xl font-bold text-gray-900 mb-4">${article.title}</h3>
-              <div class="prose max-w-none text-gray-700 text-justify">${cleanContent}</div>
-            </div>
+          // Optimasi: gunakan DocumentFragment untuk performa DOM
+          const fragment = document.createDocumentFragment();
+          const articleDiv = document.createElement('div');
+          articleDiv.className = 'bg-white border border-gray-200 shadow-sm rounded-xl p-6';
+          articleDiv.innerHTML = `
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">${article.title}</h3>
+            <div class="prose max-w-none text-gray-700 text-justify">${cleanContent}</div>
           `;
+          fragment.appendChild(articleDiv);
+          
+          // Clear container dan append fragment
+          container.innerHTML = '';
+          container.appendChild(fragment);
         }
 
         drawRandomArticleContent();
-        setInterval(drawRandomArticleContent, 30000);
+        articleInterval = setInterval(drawRandomArticleContent, 30000);
+        
+        // Cleanup interval saat halaman unload
+        window.addEventListener('beforeunload', () => {
+          if (articleInterval) clearInterval(articleInterval);
+        });
+        
       } catch (error) {
         container.innerHTML = `<div class="text-center text-red-700 p-6 bg-red-50 border border-red-200 rounded-lg" role="alert">
           <h4 class="font-bold">Gagal Memuat Artikel</h4>
@@ -418,6 +591,20 @@
           <p class="text-xs text-gray-500 mt-3">Ini bisa terjadi karena masalah <strong>CORS</strong>. Pastikan server <code>${BLOG_URL}</code> mengizinkan request dari domain ini.</p>
         </div>`;
       }
+    }
+
+    // ====== User Engagement Tracking ======
+    let userEngagement = {
+      videoWatched: false,
+      modalShown: false,
+      timeOnPage: 0,
+      interactions: 0
+    };
+
+    // Track user interactions
+    function trackInteraction(type) {
+      userEngagement.interactions++;
+      console.log(`User interaction: ${type}`, userEngagement);
     }
 
     // ====== Init ======
@@ -429,6 +616,18 @@
 
       setupVideo();
       loadAllArticles();
+
+      // Track page time
+      setInterval(() => {
+        userEngagement.timeOnPage += 1;
+      }, 1000);
+
+      // Track legitimate user paths
+      document.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') {
+          trackInteraction('click');
+        }
+      });
 
       // Tahan tombol Back (dipertahankan)
       history.pushState(null, null, document.URL);

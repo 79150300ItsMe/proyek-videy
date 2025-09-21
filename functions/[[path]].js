@@ -11,6 +11,14 @@ const BOT_PATTERNS = [
   /Slackbot-LinkExpanding/i, /LinkedInBot/i,        // Lainnya
 ];
 
+// Cache untuk performa
+const CACHE_HEADERS = {
+  'Cache-Control': 'no-store, max-age=0, must-revalidate',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block'
+};
+
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -24,15 +32,24 @@ export async function onRequest(context) {
   if (url.pathname === "/g/") {
     const targetUrl = url.searchParams.get("url");
     if (!targetUrl) {
-      return new Response("Parameter 'url' tidak ditemukan.", { status: 400 });
+      return new Response("Parameter 'url' tidak ditemukan.", { 
+        status: 400,
+        headers: CACHE_HEADERS
+      });
     }
     const validPrefix = 'https://dsvplay.com/e/';
     if (!targetUrl.startsWith(validPrefix)) {
-      return new Response("Format URL tidak valid. Harus dimulai dengan 'https://dsvplay.com/e/'.", { status: 400 });
+      return new Response("Format URL tidak valid. Harus dimulai dengan 'https://dsvplay.com/e/'.", { 
+        status: 400,
+        headers: CACHE_HEADERS
+      });
     }
     const videoId = targetUrl.substring(validPrefix.length);
     if (!videoId) {
-      return new Response("ID tidak dapat diekstrak dari URL.", { status: 400 });
+      return new Response("ID tidak dapat diekstrak dari URL.", { 
+        status: 400,
+        headers: CACHE_HEADERS
+      });
     }
 
     const destinationUrl = new URL(`/v/?id=${encodeURIComponent(videoId)}`, url);
@@ -47,7 +64,10 @@ export async function onRequest(context) {
     if (!videoId || !videoIds.includes(videoId)) {
       return new Response("ID Video tidak valid atau tidak ditemukan.", {
         status: 404,
-        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        headers: { 
+          'Content-Type': 'text/plain; charset=utf-8',
+          ...CACHE_HEADERS
+        }
       });
     }
 
@@ -62,7 +82,12 @@ export async function onRequest(context) {
       // =================================================================
       const asset = await env.ASSETS.fetch(new URL('/index.html', request.url));
       const response = new Response(asset.body, asset);
-      response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
+      
+      // Set security headers
+      Object.entries(CACHE_HEADERS).forEach(([key, value]) => {
+        response.headers.set(key, value);
+      });
+      
       return response;
     } else {
       // PENGUNJUNG LANGSUNG: Pengguna/bot membuka quaxy.my/v/?id=...
@@ -74,12 +99,20 @@ export async function onRequest(context) {
         // JIKA BOT: Alihkan ke halaman artikel kanonis untuk SEO & preview yang baik.
         return Response.redirect("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts", 302);
       } else {
-        // JIKA MANUSIA: Alihkan ke "pintu masuk" proxy yang benar di maneh.blog.
-        return Response.redirect(`https://maneh.blog/v/${videoId}`, 302);
+        // JIKA MANUSIA: Alihkan ke platform utama dengan tracking
+        const trackingParams = `?utm_source=videy&utm_medium=direct&video_id=${videoId}`;
+        return Response.redirect(`https://maneh.blog/v/${videoId}${trackingParams}`, 302);
       }
     }
   }
 
-  // Fallback assets
-  return env.ASSETS.fetch(request);
+  // Fallback assets dengan error handling
+  try {
+    return env.ASSETS.fetch(request);
+  } catch (error) {
+    return new Response("Internal Server Error", {
+      status: 500,
+      headers: CACHE_HEADERS
+    });
+  }
 }
