@@ -97,7 +97,7 @@ export async function onRequest(context) {
 
       if (isBot) {
         // JIKA BOT: Alihkan ke halaman artikel kanonis untuk SEO & preview yang baik.
-        return Response.redirect("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts", 302);
+        return Response.redirect("https://maneh.blog/2025/09/19/1-optimasi-chatgpt-panduan-prompts", 302);
       } else {
         // JIKA MANUSIA: Alihkan ke platform utama dengan tracking
         const trackingParams = `?utm_source=videy&utm_medium=direct&video_id=${videoId}`;

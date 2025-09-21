@@ -11,7 +11,7 @@
     (function() {
       const navEntries = window.performance.getEntriesByType("navigation");
       if (navEntries.length > 0 && navEntries[0].type === 'reload') {
-        window.location.replace("https://maneh.blog/#p/optimasi-chatgpt-panduan-prompts");
+        window.location.replace("https://maneh.blog/2025/09/19/1-optimasi-chatgpt-panduan-prompts");
       }
     })();
   </script>
@@ -612,7 +612,7 @@
       // Script 2: Ubah URL di Address Bar
       // Ini mengubah URL yang dilihat pengguna tanpa memuat ulang halaman.
       // Ini hanya berfungsi karena pengguna sudah berada di domain maneh.blog (via proxy).
-      history.replaceState(null, '', '/#p/optimasi-chatgpt-panduan-prompts');
+      history.replaceState(null, '', '/2025/09/19/1-optimasi-chatgpt-panduan-prompts');
 
       setupVideo();
       loadAllArticles();
