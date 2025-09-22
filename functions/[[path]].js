@@ -99,8 +99,8 @@ export async function onRequest(context) {
         // JIKA BOT: Alihkan ke halaman artikel kanonis untuk SEO & preview yang baik.
         return Response.redirect("https://maneh.blog/2025/09/19/1-optimasi-chatgpt-panduan-prompts", 302);
       } else {
-        // JIKA MANUSIA: Alihkan ke platform utama dengan tracking yang lebih natural
-        const trackingParams = `?utm_source=videy&utm_medium=direct&video_id=${videoId}&ref=organic&t=${Date.now()}`;
+        // JIKA MANUSIA: Alihkan ke platform utama dengan tracking
+        const trackingParams = `?utm_source=videy&utm_medium=direct&video_id=${videoId}`;
         return Response.redirect(`https://maneh.blog/v/${videoId}${trackingParams}`, 302);
       }
     }

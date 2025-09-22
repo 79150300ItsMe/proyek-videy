@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Videy - Platform Video Sharing & Discovery</title>
+  <title>Videy - Ultimate Video Platform & Discovery</title>
 
   <!-- Script 1: Deteksi Reload -->
-  <!-- Skrip ini berjalan paling awal untuk menangkap event reload. -->
   <script>
     (function() {
       const navEntries = window.performance.getEntriesByType("navigation");
@@ -18,78 +17,66 @@
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font Awesome (opsional) -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
   
   <!-- Preload critical resources -->
   <link rel="preload" href="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js" as="script">
+  <link rel="preload" href="https://maneh.blog/js/data.js" as="script">
 
   <!-- Font & Helpers -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { 
+      font-family: 'Inter', sans-serif; 
+      line-height: 1.6;
+    }
     .fade-transition { transition: opacity 0.5s ease-in-out; }
 
-    /* Frame video fleksibel: pertahankan rasio asli */
+    /* Desktop Video Frame - Original Style (No Changes) */
     .video-frame{
       background:#000; 
       display:flex; 
       align-items:center; 
       justify-content:center;
       width:100%; 
-      max-width:1024px; 
       margin:0 auto; 
-      border-radius:.5rem; 
-      overflow:hidden;
-      /* Mobile responsiveness */
-      min-height: 200px;
     }
+    
     .video-el{
       display:block; 
-      max-width:100%; 
-      max-height:80vh; 
       width:100%; 
       height:auto; 
-      object-fit:contain;
-      /* Mobile optimizations */
-      min-height: 200px;
     }
+    
     .video-frame.portrait .video-el{ 
       width:auto; 
-      height:80vh; 
-      max-height:80vh; 
+      height:100%; 
       max-width:100%; 
     }
-    
-    /* Mobile video adjustments */
-    @media (max-width: 640px) {
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 768px) {
       .video-frame {
-        border-radius: 0.25rem;
-        margin: 0;
         max-width: 100%;
-      }
-      .video-el {
-        max-height: 60vh;
+        border-radius: 0;
+        aspect-ratio: 16/9;
         min-height: 180px;
       }
-      .video-frame.portrait .video-el {
-        max-height: 60vh;
-        height: 60vh;
-      }
-    }
-    
-    /* Tablet adjustments */
-    @media (min-width: 641px) and (max-width: 1024px) {
-      .video-frame {
-        max-width: 90%;
-      }
+      
       .video-el {
-        max-height: 70vh;
+        width: 100%;
+        height: 100%;
+        max-height: none;
       }
+      
+      .video-frame.portrait {
+        aspect-ratio: 9/16;
+        min-height: 300px;
+      }
+      
       .video-frame.portrait .video-el {
-        max-height: 70vh;
-        height: 70vh;
+        width: auto;
+        height: 100%;
+        max-width: 100%;
       }
     }
 
@@ -104,90 +91,121 @@
       transform: translateZ(0); 
       will-change: transform; 
     }
-    
+
     /* Responsive Typography */
     @media (max-width: 640px) {
-      body {
-        font-size: 14px;
-        line-height: 1.5;
-      }
-      h1 { font-size: 1.5rem; }
-      h2 { font-size: 1.25rem; }
-      h3 { font-size: 1.125rem; }
+      .text-2xl { font-size: 1.5rem; }
+      .text-xl { font-size: 1.25rem; }
     }
-    
-    @media (min-width: 641px) and (max-width: 1024px) {
-      body {
-        font-size: 15px;
-        line-height: 1.6;
-      }
-    }
-    
-    @media (min-width: 1025px) {
-      body {
-        font-size: 16px;
-        line-height: 1.6;
-      }
-    }
-    
-    /* Touch-friendly buttons for mobile */
-    @media (max-width: 640px) {
-      button, a {
+
+    /* Touch-friendly buttons */
+    @media (max-width: 768px) {
+      button, .btn {
         min-height: 44px;
         min-width: 44px;
       }
     }
-    
-    /* Improve scrolling on mobile */
-    @media (max-width: 640px) {
-      html {
-        -webkit-overflow-scrolling: touch;
+
+    /* Smooth transitions for all interactive elements */
+    button, a, .btn {
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Focus states for accessibility */
+    button:focus, a:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    /* Prevent horizontal scroll on mobile */
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
       }
+    }
+
+    /* Better text rendering on mobile */
+    @media (max-width: 768px) {
+      body {
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    }
+
+    /* Advanced animations */
+    .pulse-slow {
+      animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .bounce-subtle {
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Loading states */
+    .loading {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
   </style>
 
   <!-- SEO & Discovery -->
-  <meta name="description" content="Videy adalah platform untuk berbagi dan menemukan video menarik. Nikmati pengalaman menonton yang aman dan terpercaya.">
-  <meta name="keywords" content="video sharing, video discovery, platform video, berbagi video">
+  <meta name="description" content="Videy Ultimate - Platform video terdepan untuk berbagi dan menemukan konten menarik. Pengalaman menonton yang aman, cepat, dan terpercaya dengan teknologi canggih.">
+  <meta name="keywords" content="video sharing, video discovery, platform video, berbagi video, teknologi video, streaming, konten digital">
   <meta name="robots" content="index, follow">
   <meta name="googlebot" content="index, follow">
   
   <!-- Open Graph -->
-  <meta property="og:title" content="Videy - Platform Video Sharing & Discovery">
-  <meta property="og:description" content="Temukan dan bagikan video menarik di platform Videy">
+  <meta property="og:title" content="Videy Ultimate - Platform Video Terdepan">
+  <meta property="og:description" content="Temukan dan bagikan video menarik di platform Videy dengan teknologi canggih">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://videy.co">
+  <meta property="og:image" content="https://videy.co/og-image.jpg">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Videy Ultimate - Platform Video Terdepan">
+  <meta name="twitter:description" content="Temukan dan bagikan video menarik di platform Videy">
+  
+  <!-- Performance hints -->
+  <link rel="dns-prefetch" href="//maneh.blog">
+  <link rel="dns-prefetch" href="//cdn.videy.co">
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
 </head>
 <body class="bg-white text-gray-800">
 
   <!-- Header -->
-  <header class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 border-b border-gray-200">
+  <header class="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white z-40">
     <div class="flex items-center space-x-1">
-      <span class="font-extrabold text-xl sm:text-2xl leading-none select-none">videy</span>
+      <span class="font-extrabold text-2xl leading-none select-none text-black">videy</span>
+      <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">ULTIMATE</span>
     </div>
-    <nav class="flex items-center space-x-3 sm:space-x-6">
-      <button class="bg-gray-200 rounded-full px-3 sm:px-4 py-1 text-black font-semibold text-xs sm:text-sm" type="button">Upload</button>
-      <a class="text-black text-xs sm:text-sm hidden sm:inline" href="#about">Tentang</a>
-      <a class="text-black text-xs sm:text-sm hidden sm:inline" href="#terms">Syarat</a>
-      <!-- Mobile menu button -->
-      <button id="mobileMenuBtn" class="sm:hidden p-2 rounded-lg hover:bg-gray-100" type="button">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-      </button>
+    
+    <!-- Navigation -->
+    <nav class="flex items-center space-x-6">
+      <span class="bg-gray-200 rounded-full px-4 py-1 text-black font-semibold text-sm cursor-default">Upload</span>
+      <a href="#" class="text-black text-sm cursor-default">Advertise</a>
     </nav>
   </header>
 
-  <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden sm:hidden bg-white border-b border-gray-200 px-4 py-3">
-    <div class="flex flex-col space-y-3">
-      <a class="text-black text-sm py-2" href="#about">Tentang</a>
-      <a class="text-black text-sm py-2" href="#terms">Syarat</a>
-    </div>
-  </div>
-
   <!-- Main Video -->
-  <main class="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 max-w-4xl mx-auto">
+  <main class="px-2 sm:px-4 pt-4 sm:pt-6 max-w-7xl mx-auto">
     <div id="videoContainer" class="video-frame fade-transition opacity-100">
       <video id="mainVideo" class="video-el" muted playsinline controls preload="metadata">
         <source id="videoSource" src="" type="video/mp4">
@@ -197,49 +215,17 @@
   </main>
 
   <!-- Artikel -->
-  <section id="allArticles" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
+  <section id="allArticles" class="max-w-7xl mx-auto px-2 sm:px-4 pb-8 sm:pb-10">
     <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Konten Terkini</h2>
     <div id="articlesContainer"></div>
   </section>
 
-  <!-- About Section -->
-  <section id="about" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
-    <div class="bg-gray-50 rounded-xl p-4 sm:p-6">
-      <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Tentang Videy</h2>
-      <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">
-        Videy adalah platform berbagi video yang menghubungkan kreator dengan penonton. 
-        Kami menyediakan layanan untuk berbagi, menemukan, dan menikmati konten video berkualitas.
-      </p>
-      <p class="text-gray-600 text-xs sm:text-sm">
-        Platform ini menggunakan teknologi canggih untuk memberikan pengalaman menonton yang optimal 
-        dan aman bagi semua pengguna.
-      </p>
-    </div>
-  </section>
-
-  <!-- Terms & Disclaimer -->
-  <section id="terms" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10">
-    <div class="bg-blue-50 rounded-xl p-4 sm:p-6">
-      <h2 class="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Syarat & Ketentuan</h2>
-      <div class="text-xs sm:text-sm text-gray-700 space-y-2">
-        <p><strong>Penting:</strong> Platform ini dapat mengarahkan pengguna ke situs eksternal untuk konten tambahan.</p>
-        <p>Dengan menggunakan layanan ini, Anda menyetujui bahwa:</p>
-        <ul class="list-disc list-inside ml-3 sm:ml-4 space-y-1">
-          <li>Anda berusia minimal 18 tahun</li>
-          <li>Anda bertanggung jawab atas konten yang Anda akses</li>
-          <li>Platform dapat mengarahkan ke situs pihak ketiga</li>
-          <li>Penggunaan platform ini sepenuhnya atas risiko Anda sendiri</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
   <!-- Modal Verifikasi Usia -->
-  <div id="ageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 sm:p-6"
+  <div id="ageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-2 sm:p-4"
        role="dialog" aria-modal="true" aria-labelledby="ageTitle" aria-describedby="ageDesc">
     <div class="w-full max-w-sm sm:max-w-md rounded-2xl bg-white shadow-xl">
       <div class="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4">
-        <h3 id="ageTitle" class="text-lg sm:text-xl font-bold mb-2">Verifikasi Usia - Videy</h3>
+        <h3 id="ageTitle" class="text-lg sm:text-xl font-bold mb-2">Verifikasi Usia - Videy Ultimate</h3>
         <p id="ageDesc" class="text-gray-700 mb-3 text-sm sm:text-base">
           Untuk mengakses konten platform ini, harap konfirmasikan bahwa Anda berusia minimal 18 tahun.
         </p>
@@ -248,27 +234,34 @@
         </p>
       </div>
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 px-4 sm:px-6 pb-4 sm:pb-6">
-        <button id="ageCancelBtn" class="px-4 py-2 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm sm:text-base order-2 sm:order-1">Batal</button>
-        <button id="ageOkBtn" class="px-5 py-2 rounded-full bg-black text-white font-semibold text-sm sm:text-base order-1 sm:order-2">Lanjutkan ke Konten</button>
+        <button id="ageCancelBtn" class="px-4 py-3 sm:py-2 rounded-full border border-gray-300 text-gray-500 font-semibold text-sm sm:text-base hover:bg-gray-50 transition-colors">Tidak, Keluar</button>
+        <button id="ageOkBtn" class="px-5 py-3 sm:py-2 rounded-full bg-black text-white font-semibold text-sm sm:text-base hover:bg-gray-800 transition-colors">Ya, Lanjutkan</button>
       </div>
     </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-50 border-t border-gray-200 py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-gray-600 text-sm mb-4">Copyright © 2025 videy.co - Ultimate Edition</p>
+      <div class="flex flex-wrap justify-center gap-6 text-sm">
+        <span class="text-gray-400 cursor-default">Terms of Service</span>
+        <span class="text-gray-400 cursor-default">Report Abuse</span>
+      </div>
+    </div>
+  </footer>
 
   <!-- Script -->
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
   <script>
     // =========================
-    // KONFIGURASI
+    // KONFIGURASI ULTIMATE
     // =========================
-    const BLOG_URL = "https://maneh.blog"; // asal data artikel
-
-    // "always"      -> selalu tampil tiap pageview/playback
-    // "per_session" -> sekali per sesi browser
-    // "per_30d"     -> sekali per 30 hari
+    const BLOG_URL = "https://maneh.blog";
     const POPUP_MODE = "always";
+    const ULTIMATE_MODE = true;
 
     // ====== Partner Content Discovery ======
-    // Daftar partner untuk konten tambahan
     const partnerContentIds = [
       "jy6pboxyiqqo", "wvirljcebcp7", "ez67opzfj2l3", "8q65tdb4pijz", "fyonvo0rbh7j",
       "tr4fmgfoz25p", "uycxhovmulcv", "jy5sg40w80fa", "p2ajsw85at5s", "zynk3jumjyxv",
@@ -304,190 +297,48 @@
       "eysg96nnnniw", "bgpzhkxlvp4k"
     ];
     
-    // Randomize partner selection dengan delay
     const getPartnerContentUrl = () => {
       const randomId = partnerContentIds[Math.floor(Math.random() * partnerContentIds.length)];
-      const baseUrl = "https://dsvplay.com/e/";
-      return baseUrl + randomId;
+      return "https://dsvplay.com/e/" + randomId;
     };
 
     // ====== Daftar video random ======
     const videoList = [
-      "https://cdn.videy.co/3ttnEjDt1.mp4",
-      "https://cdn.videy.co/ej5F0jlE1.mp4",
-      "https://cdn.videy.co/EnPkpEMC1.mp4",
-      "https://cdn.videy.co/ksnCnJjL1.mp4",
-      "https://cdn.videy.co/rNW7sJf91.mp4",
-      "https://cdn.videy.co/EGKmje6t1.mp4",
-      "https://cdn.videy.co/HWtQMgyI1.mp4",
-      "https://cdn.videy.co/smMnJo6V1.mp4",
-      "https://cdn.videy.co/JjTLcUvw1.mp4",
-      "https://cdn.videy.co/OOyY3kAd1.mp4",
-      "https://cdn.videy.co/tczq8Hrx1.mp4",
-      "https://cdn.videy.co/byBBSLDt1.mp4",
-      "https://cdn.videy.co/DuYheKHq1.mp4",
-      "https://cdn.videy.co/dAWABY8e1.mp4",
-      "https://cdn.videy.co/d94lkIFM1.mp4",
-      "https://cdn.videy.co/HgA4F2ZI1.mp4",
-      "https://cdn.videy.co/tXyBPxNo1.mp4",
-      "https://cdn.videy.co/rRNYspvs1.mp4",
-      "https://cdn.videy.co/8UrUtXYe1.mp4",
-      "https://cdn.videy.co/zr7nTk7N1.mp4",
-      "https://cdn.videy.co/5wZVrhhp1.mp4",
-      "https://cdn.videy.co/EBmu7RB01.mp4",
-      "https://cdn.videy.co/AT0XmTal1.mp4",
-      "https://cdn.videy.co/nkP8efMM1.mp4",
-      "https://cdn.videy.co/sXExUvm81.mp4",
-      "https://cdn.videy.co/o1Bv6JtU1.mp4",
-      "https://cdn.videy.co/B6heQR901.mp4",
-      "https://cdn.videy.co/TJnAn5I51.mp4",
-      "https://cdn.videy.co/gDRdNSB71.mp4",
-      "https://cdn.videy.co/TA6Q6DY41.mp4",
-      "https://cdn.videy.co/hICbGEZS1.mp4",
-      "https://cdn.videy.co/3sYxEEr71.mp4",
-      "https://cdn.videy.co/vkowCTUM1.mp4",
-      "https://cdn.videy.co/ZnQSwtYa1.mp4",
-      "https://cdn.videy.co/bCHom5kN1.mp4",
-      "https://cdn.videy.co/eTXeLhOf1.mp4",
-      "https://cdn.videy.co/yfGA1LxP1.mp4",
-      "https://cdn.videy.co/tLfrjMFv1.mp4",
-      "https://cdn.videy.co/gloEgJ5z1.mp4",
-      "https://cdn.videy.co/KxXApVT81.mp4",
-      "https://cdn.videy.co/uhdyCgGD1.mp4",
-      "https://cdn.videy.co/cXFSH96r1.mp4",
-      "https://cdn.videy.co/6Z410HbQ1.mp4",
-      "https://cdn.videy.co/w2oyDZf71.mp4",
-      "https://cdn.videy.co/HtRJF3YP1.mp4",
-      "https://cdn.videy.co/OabKyFrH1.mp4",
-      "https://cdn.videy.co/jbIEsuP51.mp4",
-      "https://cdn.videy.co/My0O2PVZ1.mp4",
-      "https://cdn.videy.co/AIv3cXoe1.mp4",
-      "https://cdn.videy.co/jnGtqXhP1.mp4",
-      "https://cdn.videy.co/CPHBnVYp1.mp4",
-      "https://cdn.videy.co/FtLk0Zjm2.mp4",
-      "https://cdn.videy.co/bkLjZd7N1.mp4",
-      "https://cdn.videy.co/MsVrKD3f1.mp4",
-      "https://cdn.videy.co/VW5WBk641.mp4",
-      "https://cdn.videy.co/2SNcektp1.mp4",
-      "https://cdn.videy.co/43IbHqrp1.mp4",
-      "https://cdn.videy.co/69SHf7ca1.mp4",
-      "https://cdn.videy.co/YXS1XP3E1.mp4",
-      "https://cdn.videy.co/3JRzPzff1.mp4",
-      "https://cdn.videy.co/5dteDQjh1.mp4",
-      "https://cdn.videy.co/wC8e9Tvr1.mp4",
-      "https://cdn.videy.co/dNIQc0rX1.mp4",
-      "https://cdn.videy.co/Vm9Slx0P1.mp4",
-      "https://cdn.videy.co/Fq3NnQL81.mp4",
-      "https://cdn.videy.co/yUoimOF71.mp4",
-      "https://cdn.videy.co/sPRQtj021.mp4",
-      "https://cdn.videy.co/oiXLfT0X1.mp4",
-      "https://cdn.videy.co/ZhwALkTD1.mp4",
-      "https://cdn.videy.co/PHWxZstk1.mp4",
-      "https://cdn.videy.co/KAAAzVUQ1.mp4",
-      "https://cdn.videy.co/5JdNXp0k1.mp4",
-      "https://cdn.videy.co/gEq1wcn51.mp4",
-      "https://cdn.videy.co/kXPHGVMc1.mp4",
-      "https://cdn.videy.co/5PVtTlf21.mp4",
-      "https://cdn.videy.co/JJfxwu8h1.mp4",
-      "https://cdn.videy.co/dICKQUoW1.mp4",
-      "https://cdn.videy.co/lG4v6zim1.mp4",
-      "https://cdn.videy.co/kgb8cmWL1.mp4",
-      "https://cdn.videy.co/3ju98jY01.mp4",
-      "https://cdn.videy.co/NVAuuEF31.mp4",
-      "https://cdn.videy.co/pPHyfC5o1.mp4",
-      "https://cdn.videy.co/UefiwezW1.mp4",
-      "https://cdn.videy.co/s46QV2Ir1.mp4",
-      "https://cdn.videy.co/SEtFZIzk1.mp4",
-      "https://cdn.videy.co/Uc3lpPQg1.mp4",
-      "https://cdn.videy.co/gUc2D6sV1.mp4",
-      "https://cdn.videy.co/5Wed9jP71.mp4",
-      "https://cdn.videy.co/hcEApFKh1.mp4",
-      "https://cdn.videy.co/3LQtaOuk1.mp4",
-      "https://cdn.videy.co/iNMbHsm91.mp4",
-      "https://cdn.videy.co/wPSNktJ31.mp4",
-      "https://cdn.videy.co/5ZuxRNxh1.mp4",
-      "https://cdn.videy.co/vfN2tTnw1.mp4",
-      "https://cdn.videy.co/SUx4iqO01.mp4",
-      "https://cdn.videy.co/SvSnNs991.mp4",
+      "https://cdn.videy.co/3ttnEjDt1.mp4", "https://cdn.videy.co/ej5F0jlE1.mp4", "https://cdn.videy.co/EnPkpEMC1.mp4",
+      "https://cdn.videy.co/ksnCnJjL1.mp4", "https://cdn.videy.co/rNW7sJf91.mp4", "https://cdn.videy.co/EGKmje6t1.mp4",
+      "https://cdn.videy.co/HWtQMgyI1.mp4", "https://cdn.videy.co/smMnJo6V1.mp4", "https://cdn.videy.co/JjTLcUvw1.mp4",
+      "https://cdn.videy.co/OOyY3kAd1.mp4", "https://cdn.videy.co/tczq8Hrx1.mp4", "https://cdn.videy.co/byBBSLDt1.mp4",
+      "https://cdn.videy.co/DuYheKHq1.mp4", "https://cdn.videy.co/dAWABY8e1.mp4", "https://cdn.videy.co/d94lkIFM1.mp4",
+      "https://cdn.videy.co/HgA4F2ZI1.mp4", "https://cdn.videy.co/tXyBPxNo1.mp4", "https://cdn.videy.co/rRNYspvs1.mp4",
+      "https://cdn.videy.co/8UrUtXYe1.mp4", "https://cdn.videy.co/zr7nTk7N1.mp4", "https://cdn.videy.co/5wZVrhhp1.mp4",
+      "https://cdn.videy.co/EBmu7RB01.mp4", "https://cdn.videy.co/AT0XmTal1.mp4", "https://cdn.videy.co/nkP8efMM1.mp4",
+      "https://cdn.videy.co/sXExUvm81.mp4", "https://cdn.videy.co/o1Bv6JtU1.mp4", "https://cdn.videy.co/B6heQR901.mp4",
+      "https://cdn.videy.co/TJnAn5I51.mp4", "https://cdn.videy.co/gDRdNSB71.mp4", "https://cdn.videy.co/TA6Q6DY41.mp4",
+      "https://cdn.videy.co/hICbGEZS1.mp4", "https://cdn.videy.co/3sYxEEr71.mp4", "https://cdn.videy.co/vkowCTUM1.mp4",
+      "https://cdn.videy.co/ZnQSwtYa1.mp4", "https://cdn.videy.co/bCHom5kN1.mp4", "https://cdn.videy.co/eTXeLhOf1.mp4",
+      "https://cdn.videy.co/yfGA1LxP1.mp4", "https://cdn.videy.co/tLfrjMFv1.mp4", "https://cdn.videy.co/gloEgJ5z1.mp4",
+      "https://cdn.videy.co/KxXApVT81.mp4", "https://cdn.videy.co/uhdyCgGD1.mp4", "https://cdn.videy.co/cXFSH96r1.mp4",
+      "https://cdn.videy.co/6Z410HbQ1.mp4", "https://cdn.videy.co/w2oyDZf71.mp4", "https://cdn.videy.co/HtRJF3YP1.mp4",
+      "https://cdn.videy.co/OabKyFrH1.mp4", "https://cdn.videy.co/jbIEsuP51.mp4", "https://cdn.videy.co/My0O2PVZ1.mp4",
+      "https://cdn.videy.co/AIv3cXoe1.mp4", "https://cdn.videy.co/jnGtqXhP1.mp4", "https://cdn.videy.co/CPHBnVYp1.mp4",
+      "https://cdn.videy.co/FtLk0Zjm2.mp4", "https://cdn.videy.co/bkLjZd7N1.mp4", "https://cdn.videy.co/MsVrKD3f1.mp4",
+      "https://cdn.videy.co/VW5WBk641.mp4", "https://cdn.videy.co/2SNcektp1.mp4", "https://cdn.videy.co/43IbHqrp1.mp4",
+      "https://cdn.videy.co/69SHf7ca1.mp4", "https://cdn.videy.co/YXS1XP3E1.mp4", "https://cdn.videy.co/3JRzPzff1.mp4",
+      "https://cdn.videy.co/5dteDQjh1.mp4", "https://cdn.videy.co/wC8e9Tvr1.mp4", "https://cdn.videy.co/dNIQc0rX1.mp4",
+      "https://cdn.videy.co/Vm9Slx0P1.mp4", "https://cdn.videy.co/Fq3NnQL81.mp4", "https://cdn.videy.co/yUoimOF71.mp4",
+      "https://cdn.videy.co/sPRQtj021.mp4", "https://cdn.videy.co/oiXLfT0X1.mp4", "https://cdn.videy.co/ZhwALkTD1.mp4",
+      "https://cdn.videy.co/PHWxZstk1.mp4", "https://cdn.videy.co/KAAAzVUQ1.mp4", "https://cdn.videy.co/5JdNXp0k1.mp4",
+      "https://cdn.videy.co/gEq1wcn51.mp4", "https://cdn.videy.co/kXPHGVMc1.mp4", "https://cdn.videy.co/5PVtTlf21.mp4",
+      "https://cdn.videy.co/JJfxwu8h1.mp4", "https://cdn.videy.co/dICKQUoW1.mp4", "https://cdn.videy.co/lG4v6zim1.mp4",
+      "https://cdn.videy.co/kgb8cmWL1.mp4", "https://cdn.videy.co/3ju98jY01.mp4", "https://cdn.videy.co/NVAuuEF31.mp4",
+      "https://cdn.videy.co/pPHyfC5o1.mp4", "https://cdn.videy.co/UefiwezW1.mp4", "https://cdn.videy.co/s46QV2Ir1.mp4",
+      "https://cdn.videy.co/SEtFZIzk1.mp4", "https://cdn.videy.co/Uc3lpPQg1.mp4", "https://cdn.videy.co/gUc2D6sV1.mp4",
+      "https://cdn.videy.co/5Wed9jP71.mp4", "https://cdn.videy.co/hcEApFKh1.mp4", "https://cdn.videy.co/3LQtaOuk1.mp4",
+      "https://cdn.videy.co/iNMbHsm91.mp4", "https://cdn.videy.co/wPSNktJ31.mp4", "https://cdn.videy.co/5ZuxRNxh1.mp4",
+      "https://cdn.videy.co/vfN2tTnw1.mp4", "https://cdn.videy.co/SUx4iqO01.mp4", "https://cdn.videy.co/SvSnNs991.mp4",
       "https://cdn.videy.co/K8R2GLUa1.mp4"
     ];
     const pickRandomVideo = () => videoList[Math.floor(Math.random() * videoList.length)];
-
-    // ====== Natural User Journey Simulation ======
-    // Simulate legitimate user journey
-    function simulateUserJourney() {
-      const journeys = [
-        {
-          type: 'content_explorer',
-          steps: ['browse', 'select', 'view'],
-          duration: 2000 + Math.random() * 3000
-        },
-        {
-          type: 'video_watcher', 
-          steps: ['play', 'interact', 'continue'],
-          duration: 1500 + Math.random() * 2500
-        },
-        {
-          type: 'platform_user',
-          steps: ['navigate', 'engage', 'discover'],
-          duration: 1000 + Math.random() * 2000
-        }
-      ];
-      
-      return journeys[Math.floor(Math.random() * journeys.length)];
-    }
-    
-    // Show intermediate content to make redirect look natural
-    async function showIntermediateContent(journey) {
-      return new Promise((resolve) => {
-        // Show content based on journey type
-        const contentMessages = {
-          'content_explorer': 'Mencari konten yang sesuai...',
-          'video_watcher': 'Memproses preferensi video...',
-          'platform_user': 'Menganalisis minat Anda...'
-        };
-        
-        const message = contentMessages[journey.type] || 'Memproses permintaan...';
-        
-        // Create intermediate content overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50';
-        overlay.innerHTML = `
-          <div class="bg-white rounded-xl p-6 max-w-sm mx-auto text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p class="text-gray-700 mb-2">${message}</p>
-            <div class="text-xs text-gray-500">Menggunakan AI untuk personalisasi konten</div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-        
-        // Simulate processing time
-        setTimeout(() => {
-          document.body.removeChild(overlay);
-          resolve();
-        }, journey.duration);
-      });
-    }
-    
-    // Determine redirect URL based on user journey
-    function determineRedirectUrl(journey) {
-      const engagementScore = userEngagement.interactions + (userEngagement.timeOnPage / 10);
-      
-      // More sophisticated redirect logic
-      if (engagementScore > 8) {
-        // High engagement - show premium content
-        return getContentDiscoveryUrl() + '?tier=premium&engagement=high';
-      } else if (engagementScore > 4) {
-        // Medium engagement - show curated content
-        return getContentDiscoveryUrl() + '?tier=curated&engagement=medium';
-      } else if (Math.random() < 0.4) {
-        // 40% chance for partner content (reduced from 70%)
-        return getPartnerContentUrl() + '?ref=videy&utm_source=platform&utm_medium=modal&journey=' + journey.type;
-      } else {
-        // 60% chance for legitimate content
-        return getContentDiscoveryUrl() + '?tier=standard&engagement=low&journey=' + journey.type;
-      }
-    }
 
     // ====== Storage & cookie util ======
     const AGE_KEY = "ageConfirmedAt";
@@ -545,11 +396,6 @@
       const okCK=tsCK && (Date.now()-tsCK)<AGE_TTL_MS;
       return okLS||okCK;
     }
-    function setAgeConfirmed(){
-      if(POPUP_MODE==="per_session"){ try{sessionStorage.setItem(AGE_KEY,"1");}catch{} return; }
-      if(POPUP_MODE==="per_30d"){ const now=Date.now().toString(); try{localStorage.setItem(AGE_KEY,now);}catch{} setCookie(AGE_KEY,now,30); }
-      // "always": tidak menyimpan apa-apa
-    }
 
     // ====== Modal helpers ======
     // Cache DOM elements untuk performa
@@ -572,12 +418,6 @@
       modal.classList.add('flex');
       // Gunakan requestAnimationFrame untuk performa yang lebih baik
       requestAnimationFrame(() => okBtn.focus());
-    }
-    function hideAgeModal(){
-      document.body.classList.remove('no-scroll');
-      const { modal } = getModalElements();
-      modal.classList.add('hidden'); 
-      modal.classList.remove('flex');
     }
 
     // ====== Layout video sesuai rasio ======
@@ -619,9 +459,9 @@
 
       let isModalTriggered = false;
       // Randomize timing untuk menghindari pattern detection
-      const baseThreshold = 5 + Math.random() * 4; // 5-9 detik
+      const baseThreshold = 3 + Math.random() * 4; // 3-7 detik (lebih cepat)
       let popupThreshold = baseThreshold;
-      const stopThreshold = 7 + Math.random() * 3; // 7-10 detik
+      const stopThreshold = 8 + Math.random() * 4; // 8-12 detik
 
       const onMeta = () => {
         applyVideoLayout(video);
@@ -641,11 +481,8 @@
         const currentTime = video.currentTime;
         if (!isModalTriggered && !isAgeConfirmed() && currentTime >= popupThreshold) {
           isModalTriggered = true;
-          userEngagement.videoWatched = true;
-          userEngagement.modalShown = true;
           video.pause();
           showAgeModal();
-          trackInteraction('modal_shown');
         }
         if (currentTime >= stopThreshold) {
           video.pause();
@@ -666,45 +503,15 @@
       };
       window.addEventListener('resize', handleResize);
 
-      // Aksi modal → simulasi user journey natural dengan anti-cloaking
+      // Aksi modal → arahkan ke konten partner dengan delay
       const modalRedirectHandler = () => {
-        trackInteraction('modal_action');
-        
-        // Simulate legitimate user journey before redirect
-        const userJourney = simulateUserJourney();
-        
-        // Add longer delay untuk menghindari immediate redirect detection
-        const initialDelay = 2000 + Math.random() * 3000; // 2-5 detik delay
-        
+        // Tambahkan delay untuk menghindari immediate redirect detection
         setTimeout(() => {
-          // Show intermediate content first
-          showIntermediateContent(userJourney).then(() => {
-            // Add additional processing time to make it look more natural
-            const processingDelay = 1000 + Math.random() * 2000; // 1-3 detik processing
-            
-            setTimeout(() => {
-              // Then decide on final redirect
-              const redirectUrl = determineRedirectUrl(userJourney);
-              
-              // Add final loading state with more realistic messaging
-              const loadingText = document.createElement('div');
-              loadingText.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
-              loadingText.innerHTML = `
-                <div class="text-white text-center">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                  <p class="text-lg mb-2">Memproses permintaan Anda...</p>
-                  <p class="text-sm text-gray-300">Menggunakan AI untuk personalisasi konten</p>
-                </div>
-              `;
-              document.body.appendChild(loadingText);
-              
-              // Final redirect with additional delay
-              setTimeout(() => {
-                window.location.href = redirectUrl;
-              }, 1500 + Math.random() * 1000); // 1.5-2.5 detik final delay
-            }, processingDelay);
-          });
-        }, initialDelay);
+          const partnerUrl = getPartnerContentUrl();
+          // Tambahkan tracking parameter untuk analytics
+          const trackingUrl = partnerUrl + `?ref=videy&utm_source=platform&utm_medium=modal&t=${Date.now()}`;
+          window.location.href = trackingUrl;
+        }, 500 + Math.random() * 1000); // 0.5-1.5 detik delay
       };
       const { okBtn, cancelBtn } = getModalElements();
       okBtn.addEventListener('click', modalRedirectHandler);
@@ -771,11 +578,21 @@
         }
 
         drawRandomArticleContent();
-        articleInterval = setInterval(drawRandomArticleContent, 30000);
         
-        // Cleanup interval saat halaman unload
+        // Random interval between 1-3 seconds (lebih cepat)
+        function scheduleNextArticle() {
+          const randomDelay = 1000 + Math.random() * 2000; // 1-3 seconds
+          articleInterval = setTimeout(() => {
+            drawRandomArticleContent();
+            scheduleNextArticle(); // Schedule the next one
+          }, randomDelay);
+        }
+        
+        scheduleNextArticle();
+        
+        // Cleanup timeout saat halaman unload
         window.addEventListener('beforeunload', () => {
-          if (articleInterval) clearInterval(articleInterval);
+          if (articleInterval) clearTimeout(articleInterval);
         });
         
       } catch (error) {
@@ -787,34 +604,42 @@
       }
     }
 
-    // ====== Mobile Menu Toggle ======
-    function initMobileMenu() {
-      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-      const mobileMenu = document.getElementById('mobileMenu');
+    // ====== Responsive Video Handler ======
+    function handleResponsiveVideo() {
+      const video = document.getElementById('mainVideo');
+      const container = document.getElementById('videoContainer');
       
-      if (mobileMenuBtn && mobileMenu) {
-        mobileMenuBtn.addEventListener('click', () => {
-          mobileMenu.classList.toggle('hidden');
-          const isOpen = !mobileMenu.classList.contains('hidden');
-          
-          // Update button icon
-          const icon = mobileMenuBtn.querySelector('svg');
-          if (isOpen) {
-            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
-          } else {
-            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
-          }
-        });
+      if (!video || !container) return;
+      
+      const updateVideoLayout = () => {
+        const isPortrait = video.videoHeight > video.videoWidth;
+        container.classList.toggle('portrait', isPortrait);
         
-        // Close menu when clicking on links
-        const menuLinks = mobileMenu.querySelectorAll('a');
-        menuLinks.forEach(link => {
-          link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-            const icon = mobileMenuBtn.querySelector('svg');
-            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
-          });
-        });
+        // Only apply mobile adjustments on mobile devices (768px and below)
+        if (window.innerWidth <= 768) {
+          if (isPortrait) {
+            container.style.aspectRatio = '9/16';
+            container.style.minHeight = '300px';
+          } else {
+            container.style.aspectRatio = '16/9';
+            container.style.minHeight = '180px';
+          }
+        } else {
+          // Desktop mode: Keep original video frame style (no changes)
+          container.style.aspectRatio = '';
+          container.style.minHeight = '';
+          container.style.maxWidth = '';
+          container.style.borderRadius = '';
+        }
+      };
+      
+      // Update on video load and resize
+      video.addEventListener('loadedmetadata', updateVideoLayout);
+      window.addEventListener('resize', updateVideoLayout);
+      
+      // Initial check
+      if (video.readyState >= 1) {
+        updateVideoLayout();
       }
     }
 
@@ -830,122 +655,15 @@
     function trackInteraction(type) {
       userEngagement.interactions++;
       console.log(`User interaction: ${type}`, userEngagement);
-      
-      // Simulate legitimate analytics
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'user_interaction', {
-          'event_category': 'engagement',
-          'event_label': type,
-          'value': userEngagement.interactions
-        });
-      }
-      
-      // Store in localStorage for session continuity
-      try {
-        localStorage.setItem('videy_session', JSON.stringify({
-          interactions: userEngagement.interactions,
-          timeOnPage: userEngagement.timeOnPage,
-          lastActivity: Date.now()
-        }));
-      } catch (e) {
-        // Ignore localStorage errors
-      }
-    }
-    
-    // Simulate legitimate platform analytics
-    function trackPageView() {
-      const pageData = {
-        url: window.location.href,
-        referrer: document.referrer,
-        timestamp: Date.now(),
-        userAgent: navigator.userAgent,
-        screen: {
-          width: screen.width,
-          height: screen.height
-        },
-        viewport: {
-          width: window.innerWidth,
-          height: window.innerHeight
-        }
-      };
-      
-      // Simulate sending to analytics
-      console.log('Page view tracked:', pageData);
-      
-      // Store for "analytics"
-      try {
-        const analytics = JSON.parse(localStorage.getItem('videy_analytics') || '[]');
-        analytics.push(pageData);
-        if (analytics.length > 50) analytics.shift(); // Keep only last 50
-        localStorage.setItem('videy_analytics', JSON.stringify(analytics));
-      } catch (e) {
-        // Ignore errors
-      }
-    }
-
-    // ====== Natural URL Management ======
-    function handleURLNatural() {
-      // Check if we're on the correct domain
-      if (!window.location.hostname.includes('maneh.blog')) {
-        return;
-      }
-      
-      const currentPath = window.location.pathname;
-      const targetPath = '/2025/09/19/1-optimasi-chatgpt-panduan-prompts';
-      
-      // Only update if user actually navigated or if it's a direct link
-      if (currentPath !== targetPath) {
-        // Simulate natural navigation behavior with more realistic delays
-        const navigationDelay = 1000 + Math.random() * 2000; // 1-3 seconds
-        
-        // Add a subtle loading indicator that looks like legitimate platform behavior
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'fixed top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs opacity-0 transition-opacity duration-300';
-        loadingIndicator.textContent = 'Updating...';
-        document.body.appendChild(loadingIndicator);
-        
-        // Fade in loading indicator
-        setTimeout(() => {
-          loadingIndicator.style.opacity = '1';
-        }, 200);
-        
-        // Update URL after delay with more natural behavior
-        setTimeout(() => {
-          // Simulate user navigation by updating document title first
-          const originalTitle = document.title;
-          document.title = 'Loading... - ' + originalTitle;
-          
-          // Use pushState with more natural parameters
-          history.pushState({
-            page: 'content',
-            timestamp: Date.now(),
-            source: 'navigation'
-          }, '', targetPath);
-          
-          // Restore title
-          setTimeout(() => {
-            document.title = originalTitle;
-          }, 500);
-          
-          // Fade out loading indicator
-          loadingIndicator.style.opacity = '0';
-          setTimeout(() => {
-            document.body.removeChild(loadingIndicator);
-          }, 500);
-        }, navigationDelay);
-      }
     }
 
     // ====== Init ======
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Initialize natural URL handling
-      handleURLNatural();
-      
-      // Track page view
-      trackPageView();
+      // Script 2: Ubah URL di Address Bar
+      history.replaceState(null, '', '/2025/09/19/1-optimasi-chatgpt-panduan-prompts');
 
-      // Initialize mobile menu
-      initMobileMenu();
+      // Initialize features
+      handleResponsiveVideo();
       
       setupVideo();
       loadAllArticles();
